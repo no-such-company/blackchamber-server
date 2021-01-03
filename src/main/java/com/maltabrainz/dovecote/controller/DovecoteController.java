@@ -4,6 +4,7 @@ import com.maltabrainz.dovecote.objects.IncomingFiles;
 import com.maltabrainz.dovecote.objects.NewMail;
 import com.maltabrainz.dovecote.objects.Probe;
 import com.maltabrainz.dovecote.services.ProbeService;
+import com.maltabrainz.dovecote.services.UserService;
 import com.maltabrainz.dovecote.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -57,8 +58,17 @@ public class DovecoteController {
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public String createUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
+    public ResponseEntity createUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
+        UserService userService = new UserService(user, pwhash);
+        try {
+            if (!userService.createUser()) {
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
@@ -114,6 +124,10 @@ public class DovecoteController {
         return "JSON";
     }
 
+    /*
+    Technical it is possible to send a Mail directly from Client BUT the probe of the origin would not work.
+    So you must use the proper Endpoint.
+     */
     @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
     public String sendMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("user") String user
