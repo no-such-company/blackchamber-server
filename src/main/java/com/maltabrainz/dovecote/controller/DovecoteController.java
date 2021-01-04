@@ -58,22 +58,32 @@ public class DovecoteController {
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public ResponseEntity createUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        UserService userService = new UserService(user, pwhash);
+    public ResponseEntity createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
+        UserService userService = new UserService(user, pwHash);
         try {
             if (!userService.createUser()) {
                 return new ResponseEntity(HttpStatus.BAD_REQUEST);
             }
         } catch (Exception e) {
-            System.out.println(e);
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
-    public String deleteUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
+    public ResponseEntity deleteUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                userService.shredUser();
+            } else {
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)

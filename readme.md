@@ -1,16 +1,22 @@
 # Dovekeeper
 
-## Server for Message File Exchange
+## Server for Message File Exchange with SMail
 
-### Advantage of the common Mail protocols
-MFE is designed to replace common Emails with a new approach.
-Email was a child of his time.
-To secure the concept of Mail with attachments and Header etc. it needs a new approach.
-MFE is fully encrypted with direct build-in PGP by design. To divert old Emails from this format the Address got a slight 
-different design.
-The Server can Store the Keys, but can hold only the public without further encryption.
+### Advantage of the SMail protocol
+This program is the realization of a new idea of a secure replacement for email.
+Messenger can not replace email, because the functionality with reply, attach, forward, etc. have a great need in communication.
+The current email protocols are children of their time.
+SMail takes a new approach by communicating over the normal HTTPS protocol (port 1337) using POST/GET methods.
+The advantage is that this form of communication can be quickly programmed for systems of any type.
+The communication takes place via a simple specification of the sender, the recipient and an ID. The ID is determined by the sender and is used by the receiving server only to verify that the mail was actually sent by the sender.
+A mail is accompanied by files in addition to the three specifications. These are ALWAYS encrypted by PGP. The sender can receive the required public key freely from the recipient's server.
+A file is necessary, which determines the content of the email. A time file can contain the content additionally as HTML. All other files are considered as attachments. When the receiver and the sender check back, SHA-256 hashes are used to ensure that the files have not been tampered with in transit.
 
+Additionally, a server can be blacklisted. As soon as a service offers SMail, it is legally obligated to state whether it uses the original procedure, and thus does not make any attempts to read or pass on the content to the user via a manipulated key or with an intermediate decryption.
 
+If it is found that something like this has happened, the domain of a compromised service (regardless of its influence or size) will be permanently excluded. This also applies in the event of a rebranding or renaming. There is a 0 strikes rule!
+
+In general, the server only comes into contact with the encrypted material and does not have any clear names. It works backwards only with the hash values.
 
 
 ### How it Works
@@ -50,50 +56,54 @@ The Sender should now confirm with JSON Content:
     attachments: [
     "sone_sha512_stuff_for each other file", ....
     ],
-    MFE_comp: true
+    SMail_comp: true
 }
 ```
 The recipient can check every file for the hash
-`MFE_comp` is very important. With the boolean the sender will agree, that the original Dovekeeper Software is used und completly untapperd.
+`SMail_comp` is very important. With the boolean the sender will agree, that the original Dovekeeper Software is 
+used und completly untapperd and no violation to break the procedure was done.
 If it is TRUE and the Software is tampered or seized the owner can be sued. Also the Sender domain will be blacklisted and further 
 Dovekeeper does not accept any Message send by this Domain.
 
 The files will be stored by the Dovekeeper in the following pattern:
 
 ```
-root/
-    users/
-        username/
-            user-pw-sha512/
-                conf/keys/
-                        pub.key
-                        enc_priv_key.key
-                mails/
-                    inbox/
-                        mail-ID/
-                            msg
-                            fmsg
-                            file1sha512
-                            file2sha512
-                            meta
-                        mail-ID/
-                            msg
-                            fmsg
-                            meta
-                    random_folder_name/
-                        mail-ID/
-                            msg
-                            fmsg
-                            meta
-                    outbox/
-                          mail-ID/
-                            msg
-                            fmsg
-                            meta                
+dovecote/
+    username(SHA-256)/
+        pub.asc (PGP public)
+        key.skr (PGP private pw-protected) *
+        hashed-username(SHA-256).pw **
+        in/
+            mail-ID(SHA-256)/
+                msg
+                fmsg
+                file1(SHA-256)
+                file2(SHA-256)
+                meta
+            mail-ID(SHA-256)/
+                msg
+                fmsg
+                meta
+        random_folder_name/
+            mail-ID(SHA-256)/
+                msg
+                fmsg
+                meta
+        out/
+            mail-ID(SHA-256)/
+                msg
+                fmsg
+                meta                
 ```
+
+!! * the protective Password based on the Password, which mus hashed by SHA-256 during transport to sever. the Password will also hashed agein with same alg during the keybuild-process.
+
+!! ** the Password that is used, is the ( username + SHA-256 protected Password ) generated SHA-256.
+  
 
 ## API
 
+### send Mail to Recipient
 `@RequestMapping(value = "/in", method = RequestMethod.POST)`
 
 * `@RequestParam("sender") String sender` sender of incoming Mail
@@ -105,6 +115,7 @@ There must be an `msg` file attached otherwise the server will not accept it.
 An encrypted HTML-Text File is optional (must be named `fmsg`)
 All other files are optional and threaten as attachment.
 
+### Validation endpoint for Mails
 
 `@RequestMapping(value = "/in/probe", method = RequestMethod.POST)`
 
@@ -122,16 +133,25 @@ The JSON example:
 }
 ```
 
+### create new user
 
-    @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public String createUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
-    }
+`@RequestMapping(value = "/inbox/create", method = RequestMethod.POST)`
 
-    @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
-    public String deleteUser(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
-    }
+`@RequestParam("user") String user` username with domain
+`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
+
+Creates a new user and setup the needed filestructure. Also the public and private key will be created.
+The key can be changed later with own keys to improve security.
+
+### delete User
+
+`@RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)`
+
+`@RequestParam("user") String user` username with domain
+`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX 
+
+Delete all informations and files from user (can't be undone)
+
 
     @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)
     public String fetchInboxInformations(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {

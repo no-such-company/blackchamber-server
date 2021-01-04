@@ -41,4 +41,19 @@ public class FileSystemHelper {
             directory.mkdir();
         }
     }
+
+    public static boolean folderExists(String folder){
+        File directory = new File(folder);
+        return  directory.exists();
+    }
+
+    public boolean deleteDirectory(File directoryToBeDeleted) {
+        File[] allContents = directoryToBeDeleted.listFiles();
+        if (allContents != null) {
+            for (File file : allContents) {
+                deleteDirectory(file);
+            }
+        }
+        return directoryToBeDeleted.delete();
+    }
 }

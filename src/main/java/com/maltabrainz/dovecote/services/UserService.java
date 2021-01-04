@@ -2,11 +2,11 @@ package com.maltabrainz.dovecote.services;
 
 import com.maltabrainz.dovecote.generator.RSAGen;
 
-import java.io.FileOutputStream;
-import java.io.PrintStream;
+import java.io.*;
 
 import static com.maltabrainz.dovecote.helper.FileSystemHelper.*;
 import static com.maltabrainz.dovecote.helper.ShaHelper.getHash;
+import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
 
 public class UserService {
     public static final String IN = "/in";
@@ -28,6 +28,17 @@ public class UserService {
         return true;
     }
 
+    public boolean validateUser() throws Exception {
+        if (!folderExists(getUserFolder(user))) {
+            return false;
+        }
+        return checkCredentials();
+    }
+
+    public void shredUser() throws Exception {
+        deleteDirectory(new File(getUserFolder(user)));
+    }
+
     private void setupUserFolderAndMetaFiles() throws Exception {
         createFolder(getUserFolder(user) + IN);
         createFolder(getUserFolder(user) + OUT);
@@ -42,4 +53,22 @@ public class UserService {
     private void createKeys() throws Exception {
         RSAGen.createKeyPair(getHash(pw), user);
     }
+
+    private boolean checkCredentials() throws Exception {
+        InputStream input = getClass().getResourceAsStream(getUserFolder(user) + "/" + getHash(user) + ".pw");
+        return readFromInputStream(input).equals(getHash(user + pw));
+    }
+
+    private String readFromInputStream(InputStream inputStream) throws IOException {
+
+        StringBuilder resultStringBuilder = new StringBuilder();
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = br.readLine()) != null) {
+            resultStringBuilder.append(line).append("\n");
+        }
+
+        return resultStringBuilder.toString();
+    }
+}
 }
