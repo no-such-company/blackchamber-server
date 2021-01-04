@@ -18,6 +18,20 @@ If it is found that something like this has happened, the domain of a compromise
 
 In general, the server only comes into contact with the encrypted material and does not have any clear names. It works backwards only with the hash values.
 
+## Current status
+
+* [ ] build API
+* [ ] write tests
+* [ ] attach Postman-Workflow for integration test
+* [ ] publish sources on Github
+* [ ] create first running client for Android
+* [ ] setup first running service for public users
+* [ ] get ignored by everyone cuz who need secure communication
+
+or 
+
+* [ ] get first Issues
+* [ ] other hosts for SMail came up
 
 ### How it Works
 MFE accepts JSON with File transfer via HTTPS:7331.
@@ -152,11 +166,15 @@ The key can be changed later with own keys to improve security.
 
 Delete all informations and files from user (can't be undone)
 
+### fetch informations about the account
 
-    @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)
-    public String fetchInboxInformations(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
-    }
+`@RequestMapping(value = "/inbox/info", method = RequestMethod.POST)`
+
+`@RequestParam("user") String user` username with domain
+`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
+
+Fetch some useful information from the authenticated User, like amount of files and the
+overall filesize of all Files that are dedicated to the User.
 
     @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)
     public String fetchInboxPubKey(@RequestParam("user") String user) {

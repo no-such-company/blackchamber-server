@@ -3,6 +3,7 @@ package com.maltabrainz.dovecote.controller;
 import com.maltabrainz.dovecote.objects.IncomingFiles;
 import com.maltabrainz.dovecote.objects.NewMail;
 import com.maltabrainz.dovecote.objects.Probe;
+import com.maltabrainz.dovecote.objects.UserInfo;
 import com.maltabrainz.dovecote.services.ProbeService;
 import com.maltabrainz.dovecote.services.UserService;
 import com.maltabrainz.dovecote.storage.StorageService;
@@ -87,8 +88,16 @@ public class DovecoteController {
     }
 
     @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)
-    public String fetchInboxInformations(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
+    public Object fetchInboxInformation(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                return userService.getUserInformation();
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)

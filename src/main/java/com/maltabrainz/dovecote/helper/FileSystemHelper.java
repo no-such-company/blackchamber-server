@@ -56,4 +56,26 @@ public class FileSystemHelper {
         }
         return directoryToBeDeleted.delete();
     }
+
+    public static long folderSize(File directory) {
+        long length = 0;
+        for (File file : directory.listFiles()) {
+            if (file.isFile())
+                length += file.length();
+            else
+                length += folderSize(file);
+        }
+        return length;
+    }
+
+    public static long folderFileCount(File directory) {
+        long count = 0;
+        for (File file : directory.listFiles()) {
+            if (file.isFile())
+                count++;
+            else
+                count += folderFileCount(file);
+        }
+        return count;
+    }
 }

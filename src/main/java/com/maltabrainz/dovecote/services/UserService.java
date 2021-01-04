@@ -1,6 +1,7 @@
 package com.maltabrainz.dovecote.services;
 
 import com.maltabrainz.dovecote.generator.RSAGen;
+import com.maltabrainz.dovecote.objects.UserInfo;
 
 import java.io.*;
 
@@ -39,6 +40,16 @@ public class UserService {
         deleteDirectory(new File(getUserFolder(user)));
     }
 
+    public UserInfo getUserInformation() throws Exception {
+        UserInfo ui = new UserInfo();
+        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user)))));
+        ui.setOverallFileSize(String.valueOf(folderSize(new File(getUserFolder(user)))));
+        ui.setOutboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user) + OUT))));
+        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user) + IN))));
+
+        return ui;
+    }
+
     private void setupUserFolderAndMetaFiles() throws Exception {
         createFolder(getUserFolder(user) + IN);
         createFolder(getUserFolder(user) + OUT);
@@ -70,5 +81,4 @@ public class UserService {
 
         return resultStringBuilder.toString();
     }
-}
 }
