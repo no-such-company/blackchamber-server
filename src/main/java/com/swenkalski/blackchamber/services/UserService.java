@@ -1,6 +1,8 @@
 package com.swenkalski.blackchamber.services;
 
 import com.swenkalski.blackchamber.generator.RSAGen;
+import com.swenkalski.blackchamber.objects.MailBox;
+import com.swenkalski.blackchamber.objects.MailFolder;
 import com.swenkalski.blackchamber.objects.UserInfo;
 import org.springframework.core.io.ByteArrayResource;
 
@@ -8,7 +10,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import static com.swenkalski.blackchamber.helper.FileSystemHelper.*;
 import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
@@ -47,6 +51,16 @@ public class UserService {
 
     public void shredUser() throws Exception {
         deleteDirectory(new File(getUserFolder(user)));
+    }
+
+    public MailBox getMailFolders() throws Exception {
+        MailBox mailBox = new MailBox();
+        List<MailFolder> folderList = new ArrayList<>();
+        for (String folder: getUserFolders()) {
+            folderList.add(new MailFolder(getMailIdsFromFolder(folder),folder));
+        }
+        mailBox.setFolder(folderList);
+        return mailBox;
     }
 
     public UserInfo getUserInformation() throws Exception {
@@ -135,6 +149,16 @@ public class UserService {
 
     private String[] getUserFolders() throws Exception {
         File file = new File(getUserFolder(user));
+        return file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isDirectory();
+            }
+        });
+    }
+
+    private String[] getMailIdsFromFolder(String folder) throws Exception {
+        File file = new File(getUserFolder(user)+SEPERATOR+folder);
         return file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
