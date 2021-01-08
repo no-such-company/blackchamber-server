@@ -3,6 +3,11 @@ package com.swenkalski.blackchamber.helper;
 import com.swenkalski.blackchamber.objects.NewMail;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+
+import static java.nio.file.StandardCopyOption.*;
 
 public class FileSystemHelper {
 
@@ -25,26 +30,26 @@ public class FileSystemHelper {
 
     public static boolean createUserFolder(String username) throws Exception {
         File directory = new File(getUserFolder(username));
-        if (directory.exists()){
+        if (directory.exists()) {
             return false;
         }
         directory.mkdir();
         return true;
     }
 
-    public static void createFolder(String folder){
+    public static void createFolder(String folder) {
         File directory = new File(folder);
-        if (!directory.exists()){
+        if (!directory.exists()) {
             directory.mkdir();
         }
     }
 
-    public static boolean folderExists(String folder){
+    public static boolean folderExists(String folder) {
         File directory = new File(folder);
-        return  directory.exists();
+        return directory.exists();
     }
 
-    public boolean deleteDirectory(File directoryToBeDeleted) {
+    public static boolean deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();
         if (allContents != null) {
             for (File file : allContents) {
@@ -52,6 +57,10 @@ public class FileSystemHelper {
             }
         }
         return directoryToBeDeleted.delete();
+    }
+
+    public static void moveDir(String src, String dest) throws IOException {
+        Files.move(new File(src).toPath(), new File(dest).toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static long folderSize(File directory) {

@@ -8,6 +8,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 import static com.swenkalski.blackchamber.helper.FileSystemHelper.*;
 import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
@@ -16,6 +17,10 @@ import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
 public class UserService {
     public static final String IN = "/in";
     public static final String OUT = "/out";
+    public static final String SEPERATOR = "/";
+    public static final String PUB_ASC = "/pub.asc";
+    public static final String KEY_SKR = "/key.skr";
+    public static final String PW = ".pw";
     private String pw;
     private String user;
 
@@ -55,15 +60,15 @@ public class UserService {
     }
 
     public File getPubKeyFile() throws Exception {
-        return new File(getUserFolder(user) + "/pub.asc");
+        return new File(getUserFolder(user) + PUB_ASC);
     }
 
     public File getPrivateKeyFile() throws Exception {
-        return new File(getUserFolder(user) +  "/key.skr");
+        return new File(getUserFolder(user) + KEY_SKR);
     }
 
     public File getFile(String mailId, String fileId) throws Exception {
-        return new File(getUserFolder(user) +  IN + "/" + mailId + "/" + fileId);
+        return new File(getUserFolder(user) + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
     }
 
     public ByteArrayResource getPrivateKey() throws Exception {
@@ -77,8 +82,7 @@ public class UserService {
     }
 
     public void deleteMail(String mailId) throws Exception {
-        deleteDirectory(new File(getUserFolder(user) + IN + "/" + mailId));
-        deleteDirectory(new File(getUserFolder(user) + OUT + "/" + mailId));
+        deleteDirectory(new File(getUserFolder(user) + getFolderFromMailId(mailId) + SEPERATOR + mailId));
     }
 
     private void setupUserFolderAndMetaFiles() throws Exception {
@@ -88,7 +92,7 @@ public class UserService {
     }
 
     private void createPWFile() throws Exception {
-        PrintStream out = new PrintStream(new FileOutputStream(getUserFolder(user) + "/" + getHash(user) + ".pw"));
+        PrintStream out = new PrintStream(new FileOutputStream(getUserFolder(user) + SEPERATOR + getHash(user) + PW));
         out.print(getHash(user + pw));
     }
 
@@ -97,8 +101,15 @@ public class UserService {
     }
 
     private boolean checkCredentials() throws Exception {
-        InputStream input = getClass().getResourceAsStream(getUserFolder(user) + "/" + getHash(user) + ".pw");
+        InputStream input = getClass().getResourceAsStream(getUserFolder(user) + SEPERATOR + getHash(user) + PW);
         return readFromInputStream(input).equals(getHash(user + pw));
+    }
+
+    public void move(String mailId, String dest) throws Exception {
+        if (!Arrays.stream(getUserFolders()).anyMatch(dest::contains)) {
+            createFolder(getUserFolder(user) + SEPERATOR + dest);
+        }
+        moveDir(getUserFolder(user) + SEPERATOR + getFolderFromMailId(mailId), getUserFolder(user) + SEPERATOR + dest);
     }
 
     private String readFromInputStream(InputStream inputStream) throws IOException {
@@ -111,5 +122,24 @@ public class UserService {
         }
 
         return resultStringBuilder.toString();
+    }
+
+    private String getFolderFromMailId(String mailId) throws Exception {
+        for (String folder : getUserFolders()) {
+            if (new File(getUserFolder(user) + SEPERATOR + folder + SEPERATOR + mailId).exists()) {
+                return folder;
+            }
+        }
+        return null;
+    }
+
+    private String[] getUserFolders() throws Exception {
+        File file = new File(getUserFolder(user));
+        return file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isDirectory();
+            }
+        });
     }
 }

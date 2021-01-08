@@ -211,8 +211,19 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)
-    public String moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
+    public Object moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("dest") String dest) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                userService.move(mailId, dest);
+            } else {
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     /*
