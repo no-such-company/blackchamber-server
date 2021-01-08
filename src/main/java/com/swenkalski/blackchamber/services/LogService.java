@@ -1,4 +1,4 @@
-package com.maltabrainz.dovecote.services;
+package com.swenkalski.blackchamber.services;
 
 public class LogService {
     static public void log(String text){

@@ -1,4 +1,4 @@
-package com.maltabrainz.dovecote.generator;
+package com.swenkalski.blackchamber.generator;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.Date;
 
+import com.swenkalski.blackchamber.helper.FileSystemHelper;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
@@ -28,8 +29,6 @@ import org.bouncycastle.openpgp.operator.bc.BcPGPContentSignerBuilder;
 import org.bouncycastle.openpgp.operator.bc.BcPGPDigestCalculatorProvider;
 import org.bouncycastle.openpgp.operator.bc.BcPGPKeyPair;
 
-import static com.maltabrainz.dovecote.helper.FileSystemHelper.getUserFolder;
-
 public class RSAGen {
 
     public static final String PUB_ASC = "/pub.asc";
@@ -42,14 +41,14 @@ public class RSAGen {
         // Generate public key ring, and store to users files.
         PGPPublicKeyRing pkr = krgen.generatePublicKeyRing();
         ArmoredOutputStream pubout = new ArmoredOutputStream(
-                new BufferedOutputStream(new FileOutputStream(getUserFolder(user) + PUB_ASC)));
+                new BufferedOutputStream(new FileOutputStream(FileSystemHelper.getUserFolder(user) + PUB_ASC)));
         pkr.encode(pubout);
         pubout.close();
 
         // Generate private key, and store to users files.
         PGPSecretKeyRing skr = krgen.generateSecretKeyRing();
         BufferedOutputStream secout = new BufferedOutputStream(
-                new FileOutputStream(getUserFolder(user) + KEY_SKR));
+                new FileOutputStream(FileSystemHelper.getUserFolder(user) + KEY_SKR));
         skr.encode(secout);
         secout.close();
     }

@@ -1,6 +1,18 @@
-# Dovekeeper
+# BlackChamber
 
 ## Server for Message File Exchange with SMail
+
+### Black Chamber?
+The Black Chamber (1919–1929), also known as the Cipher Bureau, was the United States' first peacetime 
+cryptanalytic organization, and a forerunner of the National Security Agency. The only prior 
+codes and cypher organizations maintained by the US government had been some intermittent, and always 
+abandoned, attempts by Armed Forces branches prior to World War I.
+At least this "Service" was closed in 1929.
+New Secretary of State Henry L. Stimson made this decision, and years later in his memoirs made the 
+oft-quoted comment: "Gentlemen do not read each other's mail."
+
+And this should be something, that BlackChamber attempting to bring back. 
+No one should read others mails!
 
 ### Advantage of the SMail protocol
 This program is the realization of a new idea of a secure replacement for email.
@@ -32,6 +44,19 @@ or
 
 * [ ] get first Issues
 * [ ] other hosts for SMail came up
+
+### FAQ
+* **why?** GOV's always read our Mails on demand. Since the first letters was sended they tried to read them. With the new possibilities it is impossible now.
+The first Time in history it is (mostly) not longer possible to take control, because everyone can use Dovecote for his own with ease.
+* **But terrorists...?** Reading Mails was always claimed as a proper way to avoid this issues. But there is no incident ever, that was prevented by reading mails.   
+* **But Pedo...?** Nope... never... these a$$hole$ use other ways
+* **But Druglords?** Also nope...
+* **Does it really not support crime?** Yes it do. In the same way as Car Manufacturer support Drugdealer by give them a way to drive around.
+
+
+TL:DR;
+
+**This Software make sure that an Email isn't longer a postcard. Nothing more, nothing less!**
 
 ### How it Works
 MFE accepts JSON with File transfer via HTTPS:7331.
@@ -110,7 +135,7 @@ dovecote/
                 meta                
 ```
 
-!! * the protective Password based on the Password, which mus hashed by SHA-256 during transport to sever. the Password will also hashed agein with same alg during the keybuild-process.
+!! * the protective Password based on the Password, which must hashed by SHA-256 during transport to sever. the Password will also hashed again with same alg during the keybuild-process.
 
 !! ** the Password that is used, is the ( username + SHA-256 protected Password ) generated SHA-256.
   
@@ -166,7 +191,7 @@ The key can be changed later with own keys to improve security.
 
 Delete all informations and files from user (can't be undone)
 
-### fetch informations about the account
+### fetch information about the account
 
 `@RequestMapping(value = "/inbox/info", method = RequestMethod.POST)`
 
@@ -188,6 +213,14 @@ overall filesize of all Files that are dedicated to the User.
 
     @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
     public String fetchInboxPubKey(@RequestParam("user") String user,
+                                   @RequestParam("hash") String pwhash,
+                                   @RequestParam("pub") MultipartFile pubKey,
+                                   @RequestParam("priv") MultipartFile privKey) {
+        return "JSON";
+    }
+
+    @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
+    public String renewInboxKeys(@RequestParam("user") String user,
                                    @RequestParam("hash") String pwhash,
                                    @RequestParam("pub") MultipartFile pubKey,
                                    @RequestParam("priv") MultipartFile privKey) {

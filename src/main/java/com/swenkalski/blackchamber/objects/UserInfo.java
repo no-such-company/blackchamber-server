@@ -1,4 +1,4 @@
-package com.maltabrainz.dovecote.objects;
+package com.swenkalski.blackchamber.objects;
 
 import lombok.Getter;
 import lombok.Setter;

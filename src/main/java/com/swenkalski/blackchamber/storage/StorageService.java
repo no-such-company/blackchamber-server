@@ -1,16 +1,15 @@
-package com.maltabrainz.dovecote.storage;
+package com.swenkalski.blackchamber.storage;
 
-import com.maltabrainz.dovecote.helper.FileSystemHelper;
-import com.maltabrainz.dovecote.objects.IncomingFiles;
-import com.maltabrainz.dovecote.objects.NewMail;
-import com.maltabrainz.dovecote.services.ProbeService;
+import com.swenkalski.blackchamber.helper.FileSystemHelper;
+import com.swenkalski.blackchamber.objects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.NewMail;
+import com.swenkalski.blackchamber.services.ProbeService;
+import com.swenkalski.blackchamber.helper.ShaHelper;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
-
-import static com.maltabrainz.dovecote.helper.ShaHelper.getFileChecksum;
 
 public class StorageService {
 
@@ -55,7 +54,7 @@ public class StorageService {
     }
 
     private String fetchHashOfFile(File file) throws NoSuchAlgorithmException, IOException {
-        return getFileChecksum(file);
+        return ShaHelper.getFileChecksum(file);
     }
 
 

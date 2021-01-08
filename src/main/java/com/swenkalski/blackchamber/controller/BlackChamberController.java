@@ -1,14 +1,15 @@
-package com.maltabrainz.dovecote.controller;
+package com.swenkalski.blackchamber.controller;
 
-import com.maltabrainz.dovecote.objects.IncomingFiles;
-import com.maltabrainz.dovecote.objects.NewMail;
-import com.maltabrainz.dovecote.objects.Probe;
-import com.maltabrainz.dovecote.objects.UserInfo;
-import com.maltabrainz.dovecote.services.ProbeService;
-import com.maltabrainz.dovecote.services.UserService;
-import com.maltabrainz.dovecote.storage.StorageService;
+import com.swenkalski.blackchamber.objects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.NewMail;
+import com.swenkalski.blackchamber.objects.Probe;
+import com.swenkalski.blackchamber.services.ProbeService;
+import com.swenkalski.blackchamber.services.UserService;
+import com.swenkalski.blackchamber.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,10 +19,15 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-public class DovecoteController {
+public class BlackChamberController {
 
     @Autowired
-    public DovecoteController() {
+    public BlackChamberController() {
+    }
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public String welcome() {
+        return "BlackChamber mailserver running";
     }
 
     @RequestMapping(value = "/in", method = RequestMethod.POST)
@@ -100,21 +106,64 @@ public class DovecoteController {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
+    /*
+    The Server will always return a pubkey to avoid, that the feature are misused as an confirmation to
+    validate that a user exists. This should not happen.
+     */
     @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user) {
-        return "JSON";
+    public Object fetchInboxPubKey(@RequestParam("user") String user) {
+        UserService userService = new UserService(user, null);
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+            headers.add("Pragma", "no-cache");
+            headers.add("Expires", "0");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(userService.getPubKeyFile().length())
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(userService.getPubKey());
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @RequestMapping(value = "/inbox/privkey", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
+    public Object fetchInboxPubKey(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+                headers.add("Pragma", "no-cache");
+                headers.add("Expires", "0");
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentLength(userService.getPrivateKeyFile().length())
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .body(userService.getPrivateKey());
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user,
+    public String replaceInboxKeys(@RequestParam("user") String user,
                                    @RequestParam("hash") String pwhash,
                                    @RequestParam("pub") MultipartFile pubKey,
                                    @RequestParam("priv") MultipartFile privKey) {
+        return "JSON";
+    }
+
+    @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
+    public String renewInboxKeys(@RequestParam("user") String user,
+                                 @RequestParam("hash") String pwhash,
+                                 @RequestParam("pub") MultipartFile pubKey,
+                                 @RequestParam("priv") MultipartFile privKey) {
         return "JSON";
     }
 
@@ -123,19 +172,42 @@ public class DovecoteController {
         return "JSON";
     }
 
-    @RequestMapping(value = "/inbox/mail", method = RequestMethod.POST)
-    public String fetchMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
-    }
-
     @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
-    public String fetchMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId) {
-        return "JSON";
+    public Object fetchMailItemByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                HttpHeaders headers = new HttpHeaders();
+                headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+                headers.add("Pragma", "no-cache");
+                headers.add("Expires", "0");
+
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .contentLength(userService.getFile(mailId, fileId).length())
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .body(userService.getPrivateKey());
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/inbox/mail/remove", method = RequestMethod.POST)
-    public String removeMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
+    public Object removeMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId) {
+        UserService userService = new UserService(user, pwHash);
+        try {
+            if (userService.validateUser()) {
+                userService.deleteMail(mailId);
+            } else {
+                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)

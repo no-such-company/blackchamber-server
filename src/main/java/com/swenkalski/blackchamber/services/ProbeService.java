@@ -1,8 +1,8 @@
-package com.maltabrainz.dovecote.services;
+package com.swenkalski.blackchamber.services;
 
-import com.maltabrainz.dovecote.objects.IncomingFiles;
-import com.maltabrainz.dovecote.objects.NewMail;
-import com.maltabrainz.dovecote.objects.Probe;
+import com.swenkalski.blackchamber.objects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.NewMail;
+import com.swenkalski.blackchamber.objects.Probe;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;

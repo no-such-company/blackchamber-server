@@ -1,11 +1,8 @@
-package com.maltabrainz.dovecote.helper;
+package com.swenkalski.blackchamber.helper;
 
-import com.maltabrainz.dovecote.objects.NewMail;
+import com.swenkalski.blackchamber.objects.NewMail;
 
 import java.io.File;
-import java.security.NoSuchAlgorithmException;
-
-import static com.maltabrainz.dovecote.helper.ShaHelper.getHash;
 
 public class FileSystemHelper {
 
@@ -15,11 +12,11 @@ public class FileSystemHelper {
     private static final String SEPARATOR = "/";
 
     public static String getUserInFolder(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + getHash(mailHeader.getRecipient()) + IN + mailHeader.getMailHash() + SEPARATOR + fileName;
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipient()) + IN + mailHeader.getMailHash() + SEPARATOR + fileName;
     }
 
     public static String getUserFolder(String username) throws Exception {
-        return DOVECOTE + getHash(username);
+        return DOVECOTE + ShaHelper.getHash(username);
     }
 
     public static String getTempFolderForIncomingMail(NewMail mailHeader) {

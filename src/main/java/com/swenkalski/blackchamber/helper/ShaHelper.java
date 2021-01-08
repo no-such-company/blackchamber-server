@@ -1,4 +1,4 @@
-package com.maltabrainz.dovecote.helper;
+package com.swenkalski.blackchamber.helper;
 
 import java.io.File;
 import java.io.FileInputStream;

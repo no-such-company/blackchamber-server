@@ -1,6 +1,5 @@
-package com.maltabrainz.dovecote.objects;
+package com.swenkalski.blackchamber.objects;
 
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;

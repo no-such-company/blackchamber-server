@@ -1,12 +1,16 @@
-package com.maltabrainz.dovecote.services;
+package com.swenkalski.blackchamber.services;
 
-import com.maltabrainz.dovecote.generator.RSAGen;
-import com.maltabrainz.dovecote.objects.UserInfo;
+import com.swenkalski.blackchamber.generator.RSAGen;
+import com.swenkalski.blackchamber.objects.UserInfo;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
-import static com.maltabrainz.dovecote.helper.FileSystemHelper.*;
-import static com.maltabrainz.dovecote.helper.ShaHelper.getHash;
+import static com.swenkalski.blackchamber.helper.FileSystemHelper.*;
+import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
 import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
 
 public class UserService {
@@ -48,6 +52,33 @@ public class UserService {
         ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user) + IN))));
 
         return ui;
+    }
+
+    public File getPubKeyFile() throws Exception {
+        return new File(getUserFolder(user) + "/pub.asc");
+    }
+
+    public File getPrivateKeyFile() throws Exception {
+        return new File(getUserFolder(user) +  "/key.skr");
+    }
+
+    public File getFile(String mailId, String fileId) throws Exception {
+        return new File(getUserFolder(user) +  IN + "/" + mailId + "/" + fileId);
+    }
+
+    public ByteArrayResource getPrivateKey() throws Exception {
+        Path path = Paths.get(getPrivateKeyFile().getAbsolutePath());
+        return new ByteArrayResource(Files.readAllBytes(path));
+    }
+
+    public ByteArrayResource getPubKey() throws Exception {
+        Path path = Paths.get(getPubKeyFile().getAbsolutePath());
+        return new ByteArrayResource(Files.readAllBytes(path));
+    }
+
+    public void deleteMail(String mailId) throws Exception {
+        deleteDirectory(new File(getUserFolder(user) + IN + "/" + mailId));
+        deleteDirectory(new File(getUserFolder(user) + OUT + "/" + mailId));
     }
 
     private void setupUserFolderAndMetaFiles() throws Exception {
