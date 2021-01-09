@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+
 @Getter
 @Setter
 public class IncomingFiles {
@@ -13,6 +15,7 @@ public class IncomingFiles {
     private String mailId;
     private String owner;
     private String sender;
+    private File tempPath;
 
     public IncomingFiles(String originalFilename, MultipartFile file, String mailId, String owner, String sender) {
         this.originalFilename = originalFilename;

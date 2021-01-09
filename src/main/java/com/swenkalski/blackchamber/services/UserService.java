@@ -1,6 +1,7 @@
 package com.swenkalski.blackchamber.services;
 
 import com.swenkalski.blackchamber.generator.RSAGen;
+import com.swenkalski.blackchamber.objects.Address;
 import com.swenkalski.blackchamber.objects.MailBox;
 import com.swenkalski.blackchamber.objects.MailFolder;
 import com.swenkalski.blackchamber.objects.UserInfo;
@@ -26,15 +27,15 @@ public class UserService {
     public static final String KEY_SKR = "/key.skr";
     public static final String PW = ".pw";
     private String pw;
-    private String user;
+    private Address user;
 
-    public UserService(String pw, String user) {
+    public UserService(String pw, Address user) {
         this.pw = pw;
         this.user = user;
     }
 
     public boolean createUser() throws Exception {
-        if (!createUserFolder(user)) {
+        if (!createUserFolder(user.getUser())) {
             return false;
         }
         setupUserFolderAndMetaFiles();
@@ -43,14 +44,14 @@ public class UserService {
     }
 
     public boolean validateUser() throws Exception {
-        if (!folderExists(getUserFolder(user))) {
+        if (!folderExists(getUserFolder(user.getUser()))) {
             return false;
         }
         return checkCredentials();
     }
 
     public void shredUser() throws Exception {
-        deleteDirectory(new File(getUserFolder(user)));
+        deleteDirectory(new File(getUserFolder(user.getUser())));
     }
 
     public MailBox getMailFolders() throws Exception {
@@ -65,24 +66,24 @@ public class UserService {
 
     public UserInfo getUserInformation() throws Exception {
         UserInfo ui = new UserInfo();
-        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user)))));
-        ui.setOverallFileSize(String.valueOf(folderSize(new File(getUserFolder(user)))));
-        ui.setOutboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user) + OUT))));
-        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user) + IN))));
+        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user.getUser())))));
+        ui.setOverallFileSize(String.valueOf(folderSize(new File(getUserFolder(user.getUser())))));
+        ui.setOutboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user.getUser()) + OUT))));
+        ui.setInboxFilesAmount(String.valueOf(folderFileCount(new File(getUserFolder(user.getUser()) + IN))));
 
         return ui;
     }
 
     public File getPubKeyFile() throws Exception {
-        return new File(getUserFolder(user) + PUB_ASC);
+        return new File(getUserFolder(user.getUser()) + PUB_ASC);
     }
 
     public File getPrivateKeyFile() throws Exception {
-        return new File(getUserFolder(user) + KEY_SKR);
+        return new File(getUserFolder(user.getUser()) + KEY_SKR);
     }
 
     public File getFile(String mailId, String fileId) throws Exception {
-        return new File(getUserFolder(user) + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
+        return new File(getUserFolder(user.getUser()) + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
     }
 
     public ByteArrayResource getPrivateKey() throws Exception {
@@ -96,34 +97,34 @@ public class UserService {
     }
 
     public void deleteMail(String mailId) throws Exception {
-        deleteDirectory(new File(getUserFolder(user) + getFolderFromMailId(mailId) + SEPERATOR + mailId));
+        deleteDirectory(new File(getUserFolder(user.getUser()) + getFolderFromMailId(mailId) + SEPERATOR + mailId));
     }
 
     private void setupUserFolderAndMetaFiles() throws Exception {
-        createFolder(getUserFolder(user) + IN);
-        createFolder(getUserFolder(user) + OUT);
+        createFolder(getUserFolder(user.getUser()) + IN);
+        createFolder(getUserFolder(user.getUser()) + OUT);
         createPWFile();
     }
 
     private void createPWFile() throws Exception {
-        PrintStream out = new PrintStream(new FileOutputStream(getUserFolder(user) + SEPERATOR + getHash(user) + PW));
+        PrintStream out = new PrintStream(new FileOutputStream(getUserFolder(user.getUser()) + SEPERATOR + getHash(user.getUser()) + PW));
         out.print(getHash(user + pw));
     }
 
     private void createKeys() throws Exception {
-        RSAGen.createKeyPair(getHash(pw), user);
+        RSAGen.createKeyPair(getHash(pw), user.getUser());
     }
 
     private boolean checkCredentials() throws Exception {
-        InputStream input = getClass().getResourceAsStream(getUserFolder(user) + SEPERATOR + getHash(user) + PW);
+        InputStream input = getClass().getResourceAsStream(getUserFolder(user.getUser()) + SEPERATOR + getHash(user.getUser()) + PW);
         return readFromInputStream(input).equals(getHash(user + pw));
     }
 
     public void move(String mailId, String dest) throws Exception {
         if (!Arrays.stream(getUserFolders()).anyMatch(dest::contains)) {
-            createFolder(getUserFolder(user) + SEPERATOR + dest);
+            createFolder(getUserFolder(user.getUser()) + SEPERATOR + dest);
         }
-        moveDir(getUserFolder(user) + SEPERATOR + getFolderFromMailId(mailId), getUserFolder(user) + SEPERATOR + dest);
+        moveDir(getUserFolder(user.getUser()) + SEPERATOR + getFolderFromMailId(mailId), getUserFolder(user.getUser()) + SEPERATOR + dest);
     }
 
     private String readFromInputStream(InputStream inputStream) throws IOException {
@@ -140,7 +141,7 @@ public class UserService {
 
     private String getFolderFromMailId(String mailId) throws Exception {
         for (String folder : getUserFolders()) {
-            if (new File(getUserFolder(user) + SEPERATOR + folder + SEPERATOR + mailId).exists()) {
+            if (new File(getUserFolder(user.getUser()) + SEPERATOR + folder + SEPERATOR + mailId).exists()) {
                 return folder;
             }
         }
@@ -148,7 +149,7 @@ public class UserService {
     }
 
     private String[] getUserFolders() throws Exception {
-        File file = new File(getUserFolder(user));
+        File file = new File(getUserFolder(user.getUser()));
         return file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {
@@ -158,7 +159,7 @@ public class UserService {
     }
 
     private String[] getMailIdsFromFolder(String folder) throws Exception {
-        File file = new File(getUserFolder(user)+SEPERATOR+folder);
+        File file = new File(getUserFolder(user.getUser())+SEPERATOR+folder);
         return file.list(new FilenameFilter() {
             @Override
             public boolean accept(File current, String name) {

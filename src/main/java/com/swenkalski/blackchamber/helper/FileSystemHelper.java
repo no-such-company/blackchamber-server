@@ -2,12 +2,9 @@ package com.swenkalski.blackchamber.helper;
 
 import com.swenkalski.blackchamber.objects.NewMail;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-
-import static java.nio.file.StandardCopyOption.*;
 
 public class FileSystemHelper {
 
@@ -16,8 +13,12 @@ public class FileSystemHelper {
     private static final String IN = "/in/";
     private static final String SEPARATOR = "/";
 
-    public static String getUserInFolder(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipient()) + IN + mailHeader.getMailHash() + SEPARATOR + fileName;
+    public static String getUserInFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailHash() + SEPARATOR + fileName;
+    }
+
+    public static String getUserInFolderWithFilename(NewMail mailHeader) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailHash();
     }
 
     public static String getUserFolder(String username) throws Exception {
@@ -83,5 +84,22 @@ public class FileSystemHelper {
                 count += folderFileCount(file);
         }
         return count;
+    }
+
+    public static void copyFileUsingStream(File source, File dest) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+        } finally {
+            is.close();
+            os.close();
+        }
     }
 }

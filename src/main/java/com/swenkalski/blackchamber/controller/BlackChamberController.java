@@ -1,11 +1,12 @@
 package com.swenkalski.blackchamber.controller;
 
+import com.swenkalski.blackchamber.objects.Address;
 import com.swenkalski.blackchamber.objects.IncomingFiles;
 import com.swenkalski.blackchamber.objects.NewMail;
 import com.swenkalski.blackchamber.objects.Probe;
 import com.swenkalski.blackchamber.services.ProbeService;
+import com.swenkalski.blackchamber.services.SendService;
 import com.swenkalski.blackchamber.services.UserService;
-import com.swenkalski.blackchamber.storage.StorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,8 +19,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
+
 @RestController
 public class BlackChamberController {
+
 
     @Autowired
     public BlackChamberController() {
@@ -30,29 +34,7 @@ public class BlackChamberController {
         return "BlackChamber mailserver running";
     }
 
-    @RequestMapping(value = "/in", method = RequestMethod.POST)
-    public ResponseEntity handleNewMail(@RequestParam("attachments") List<MultipartFile> files
-            , @RequestParam("sender") String sender
-            , @RequestParam("recipient") String recipient
-            , @RequestParam("mailId") String mailId) {
-        NewMail mailHeader = new NewMail(recipient, sender, mailId, new Date().getTime());
-        List<IncomingFiles> attachments = new ArrayList<>();
 
-        for (MultipartFile file : files) {
-            attachments.add(new IncomingFiles(
-                    file.getOriginalFilename(), file, sender, recipient, mailId)
-            );
-        }
-
-        StorageService storageService = new StorageService(attachments, mailHeader);
-
-        try {
-            storageService.storeFileTemp();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity(HttpStatus.OK);
-    }
 
     @RequestMapping(value = "/in/probe", method = RequestMethod.POST)
     public ResponseEntity probeSendMail(@RequestBody Probe probeModel) {
@@ -66,7 +48,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
     public ResponseEntity createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (!userService.createUser()) {
                 return new ResponseEntity(HttpStatus.BAD_REQUEST);
@@ -79,7 +61,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
     public ResponseEntity deleteUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 userService.shredUser();
@@ -95,7 +77,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)
     public Object fetchInboxInformation(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 return userService.getUserInformation();
@@ -131,7 +113,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/privkey", method = RequestMethod.POST)
     public Object fetchInboxPubKey(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 HttpHeaders headers = new HttpHeaders();
@@ -169,7 +151,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)
     public Object fetchInboxList(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 return userService.getUserInformation();
@@ -182,7 +164,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
     public Object fetchMailItemByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 HttpHeaders headers = new HttpHeaders();
@@ -204,7 +186,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mail/remove", method = RequestMethod.POST)
     public Object removeMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 userService.deleteMail(mailId);
@@ -220,7 +202,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)
     public Object moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("dest") String dest) {
-        UserService userService = new UserService(user, pwHash);
+        UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 userService.move(mailId, dest);
@@ -232,17 +214,5 @@ public class BlackChamberController {
         }
 
         return new ResponseEntity(HttpStatus.OK);
-    }
-
-    /*
-    Technical it is possible to send a Mail directly from Client BUT the probe of the origin would not work.
-    So you must use the proper Endpoint.
-     */
-    @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
-    public String sendMail(@RequestParam("attachments") List<MultipartFile> files
-            , @RequestParam("user") String user
-            , @RequestParam("recipients") List<String> recipients
-    ) {
-        return "JSON";
     }
 }

@@ -11,10 +11,9 @@ public class Application {
 
     public static void main(String[] args) {
         FileSystemHelper.createFolder("dovecote");
-        
+        FileSystemHelper.createFolder("dovecote/temp");
+
         SpringApplication app = new SpringApplication(Application.class);
-        app.setDefaultProperties(Collections
-                .singletonMap("server.port", "1337"));
         app.run(args);
     }
 }
