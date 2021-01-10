@@ -38,12 +38,19 @@ In general, the server only comes into contact with the encrypted material and d
 * [ ] publish sources on Github
 * [ ] create first running client for Android
 * [ ] setup first running service for public users
-* [ ] get ignored by everyone cuz who need secure communication
 
-or 
+## release plan
 
-* [ ] get first Issues
-* [ ] other hosts for SMail came up
+* [ ] finish work for BlackChamber 
+* [ ] finish work on Android-App
+* [ ] publish of Android app as Beta
+* [ ] after two month publish JAR to make People able to use own Server (Companies have to pay 600€ per year0
+* [ ] start as real company
+* [ ] after three month publish API for creators
+* [ ] App isn't beta anymore
+* [ ] after one year publish sourcecode
+
+
 
 ### FAQ
 * **why?** GOV's always read our Mails on demand. Since the first letters was sended they tried to read them. With the new possibilities it is impossible now.

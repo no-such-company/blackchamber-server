@@ -16,7 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class FilesStorageServiceImpl implements FileStorageService {
 
-    private final Path root = Paths.get("dovecote/temp");
+    private final Path root = Paths.get("bc_storage/temp");
 
     @Override
     public void init() {

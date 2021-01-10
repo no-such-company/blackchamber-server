@@ -5,21 +5,15 @@ import com.swenkalski.blackchamber.objects.IncomingFiles;
 import com.swenkalski.blackchamber.objects.NewMail;
 import com.swenkalski.blackchamber.objects.Probe;
 import com.swenkalski.blackchamber.services.ProbeService;
-import com.swenkalski.blackchamber.services.SendService;
 import com.swenkalski.blackchamber.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import com.swenkalski.blackchamber.objects.Address;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
 
 @RestController
 public class BlackChamberController {

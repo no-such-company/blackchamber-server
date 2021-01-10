@@ -32,8 +32,6 @@ import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
 @RestController
 public class StorageController {
 
-    private List<IncomingFiles> files;
-    private NewMail mailHeader;
 
     @RequestMapping(value = "/in", method = RequestMethod.POST)
     public ResponseEntity handleNewMail(@RequestParam("attachments") List<MultipartFile> files
@@ -43,17 +41,16 @@ public class StorageController {
         NewMail mailHeader = new NewMail(recipient, sender, mailId, new Date().getTime());
         List<IncomingFiles> attachments = new ArrayList<>();
 
+
         for (MultipartFile file : files) {
             attachments.add(new IncomingFiles(
                     file.getOriginalFilename(), file, sender, recipient, mailId)
             );
         }
 
-        this.files = attachments;
-        this.mailHeader = mailHeader;
 
         try {
-            this.storeFileTemp();
+            this.storeFileTemp(attachments, mailHeader);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -71,38 +68,50 @@ public class StorageController {
             , @RequestParam("recipients") List<String> recipients
     ) throws Exception {
         UserService userService = new UserService(pwHash, new Address(user));
-        try {
-            if (userService.validateUser()) {
-                for (String recipient : recipients) {
-                    String mailId = getHash(user + recipient + new Date().getTime());
-                    NewMail mailHeader = new NewMail(recipient, user, mailId, new Date().getTime());
-                    List<IncomingFiles> attachments = new ArrayList<>();
+        if (userService.validateUser()) {
+            for (String recipient : recipients) {
+                String mailId = getHash(user + recipient + new Date().getTime());
+                NewMail mailHeader = new NewMail(recipient, user, mailId, new Date().getTime());
+                List<IncomingFiles> attachments = new ArrayList<>();
 
-                    for (MultipartFile file : files) {
-                        attachments.add(new IncomingFiles(
-                                file.getOriginalFilename(), file, user, recipient, mailId)
-                        );
-                    }
-                    this.files = attachments;
-                    this.mailHeader = mailHeader;
-
-                    SendService sendService = new SendService(user, recipient, mailId, attachments);
-                    sendService.send();
-                    try {
-                        this.storeOutgoingFile();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                for (MultipartFile file : files) {
+                    attachments.add(new IncomingFiles(
+                            file.getOriginalFilename(), file, user, recipient, mailId)
+                    );
                 }
-                return new ResponseEntity(HttpStatus.OK);
+                this.storeTempFilesForOutbound(attachments, mailHeader);
+                try {
+                    SendService sendService = new SendService(mailHeader, attachments);
+                    sendService.send();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    this.storeOutgoingFile(attachments, mailHeader);
+                }
             }
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity(HttpStatus.OK);
+        }
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+    }
+
+    private void storeTempFilesForOutbound(List<IncomingFiles> files, NewMail mailHeader) throws IOException, NoSuchAlgorithmException {
+        createFolder(FileSystemHelper.getTempFolderForOutboundMail(mailHeader));
+        for (IncomingFiles file : files) {
+            File dest = new File(FileSystemHelper.getTempFolderForOutboundMail(mailHeader) + "/" + file.getFile().getOriginalFilename());
+            InputStream filestream = file.getFile().getInputStream();
+            java.nio.file.Files.copy(
+                    filestream,
+                    dest.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+
+            IOUtils.closeQuietly(filestream);
+
+            file.setHash(fetchHashOfFile(dest));
+            file.setTempPath(dest);
         }
     }
 
-    private void storeFileTemp() throws Exception {
+    private void storeFileTemp(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
         createFolder(FileSystemHelper.getTempFolderForIncomingMail(mailHeader));
         for (IncomingFiles file : files) {
             File dest = new File(FileSystemHelper.getTempFolderForIncomingMail(mailHeader) + "/" + file.getFile().getOriginalFilename());
@@ -121,27 +130,29 @@ public class StorageController {
         ProbeService probeService = new ProbeService(files, mailHeader);
         try {
             if (probeService.sendProbeToSenderServer()) {
-                deployFiles();
+                deployFiles(files, mailHeader);
             }
-        } catch (Exception e){
+        } catch (Exception e) {
             System.out.println(e);
-        }finally {
-            purgeTempFiles();
+        } finally {
+            purgeTempFiles(mailHeader);
         }
     }
 
-    private void storeOutgoingFile() throws Exception {
+    private void storeOutgoingFile(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
+        createFolder(getUserOutFolder(mailHeader));
+
         for (IncomingFiles file : files) {
-            File dest = new File(FileSystemHelper.getTempFolderForIncomingMail(mailHeader));
-            file.getFile().transferTo(dest);
-            file.setHash(fetchHashOfFile(dest));
-        }
-        deployFiles();
 
-        purgeTempFiles();
+            File dest = new File(FileSystemHelper.getUserOutFolderWithFilename(mailHeader, file.getFile().getOriginalFilename()));
+            copyFileUsingStream(file.getTempPath(), dest);
+        }
+        deployMetaFile();
+
+        purgeOutboundTempFiles(mailHeader);
     }
 
-    private void deployFiles() throws Exception {
+    private void deployFiles(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
         createFolder(getUserInFolderWithFilename(mailHeader));
 
         for (IncomingFiles file : files) {
@@ -152,8 +163,12 @@ public class StorageController {
         deployMetaFile();
     }
 
-    private void purgeTempFiles() {
+    private void purgeTempFiles(NewMail mailHeader) {
         deleteDirectory(new File(FileSystemHelper.getTempFolderForIncomingMail(mailHeader)));
+    }
+
+    private void purgeOutboundTempFiles(NewMail mailHeader) {
+        deleteDirectory(new File(FileSystemHelper.getTempFolderForOutboundMail(mailHeader)));
     }
 
     private void deployMetaFile() {

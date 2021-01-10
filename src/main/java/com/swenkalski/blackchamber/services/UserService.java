@@ -108,7 +108,7 @@ public class UserService {
 
     private void createPWFile() throws Exception {
         PrintStream out = new PrintStream(new FileOutputStream(getUserFolder(user.getUser()) + SEPERATOR + getHash(user.getUser()) + PW));
-        out.print(getHash(user + pw));
+        out.print(getHash(user.getUser() + pw));
     }
 
     private void createKeys() throws Exception {
@@ -116,8 +116,7 @@ public class UserService {
     }
 
     private boolean checkCredentials() throws Exception {
-        InputStream input = getClass().getResourceAsStream(getUserFolder(user.getUser()) + SEPERATOR + getHash(user.getUser()) + PW);
-        return readFromInputStream(input).equals(getHash(user + pw));
+        return Files.readString(Path.of(getUserFolder(user.getUser()) + SEPERATOR + getHash(user.getUser()) + PW)).equals(getHash(user.getUser() + pw));
     }
 
     public void move(String mailId, String dest) throws Exception {

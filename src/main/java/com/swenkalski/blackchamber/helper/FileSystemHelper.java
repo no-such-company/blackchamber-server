@@ -8,9 +8,10 @@ import java.nio.file.StandardCopyOption;
 
 public class FileSystemHelper {
 
-    private static final String DOVECOTE_TEMP = "dovecote/temp/";
-    private static final String DOVECOTE = "dovecote/";
+    private static final String DOVECOTE_TEMP = "bc_storage/temp/";
+    private static final String DOVECOTE = "bc_storage/";
     private static final String IN = "/in/";
+    private static final String OUT = "/out/";
     private static final String SEPARATOR = "/";
 
     public static String getUserInFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
@@ -21,12 +22,23 @@ public class FileSystemHelper {
         return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailHash();
     }
 
+    public static String getUserOutFolder(NewMail mailHeader) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailHash();
+    }
+    public static String getUserOutFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailHash() + SEPARATOR + fileName;
+    }
+
     public static String getUserFolder(String username) throws Exception {
         return DOVECOTE + ShaHelper.getHash(username);
     }
 
     public static String getTempFolderForIncomingMail(NewMail mailHeader) {
         return DOVECOTE_TEMP + mailHeader.getMailHash();
+    }
+
+    public static String getTempFolderForOutboundMail(NewMail mailHeader) {
+        return DOVECOTE_TEMP + mailHeader.getMailHash()+"--OUT";
     }
 
     public static boolean createUserFolder(String username) throws Exception {
