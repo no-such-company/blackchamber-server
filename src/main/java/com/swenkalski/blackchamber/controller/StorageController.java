@@ -4,6 +4,7 @@ import com.swenkalski.blackchamber.helper.FileSystemHelper;
 import com.swenkalski.blackchamber.objects.Address;
 import com.swenkalski.blackchamber.objects.IncomingFiles;
 import com.swenkalski.blackchamber.objects.NewMail;
+import com.swenkalski.blackchamber.objects.Response;
 import com.swenkalski.blackchamber.services.ProbeService;
 import com.swenkalski.blackchamber.helper.ShaHelper;
 import com.swenkalski.blackchamber.services.SendService;
@@ -11,10 +12,7 @@ import com.swenkalski.blackchamber.services.UserService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -34,27 +32,25 @@ public class StorageController {
 
 
     @RequestMapping(value = "/in", method = RequestMethod.POST)
-    public ResponseEntity handleNewMail(@RequestParam("attachments") List<MultipartFile> files
+    public ResponseEntity<Response>  handleNewMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("sender") String sender
             , @RequestParam("recipient") String recipient
             , @RequestParam("mailId") String mailId) {
-        NewMail mailHeader = new NewMail(recipient, sender, mailId, new Date().getTime());
-        List<IncomingFiles> attachments = new ArrayList<>();
-
-
-        for (MultipartFile file : files) {
-            attachments.add(new IncomingFiles(
-                    file.getOriginalFilename(), file, sender, recipient, mailId)
-            );
-        }
-
-
         try {
+            NewMail mailHeader = new NewMail(recipient, sender, mailId, new Date().getTime());
+            List<IncomingFiles> attachments = new ArrayList<>();
+
+
+            for (MultipartFile file : files) {
+                attachments.add(new IncomingFiles(
+                        file.getOriginalFilename(), file, sender, recipient, mailId)
+                );
+            }
             this.storeFileTemp(attachments, mailHeader);
-        } catch (Exception e) {
-            e.printStackTrace();
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+        } catch (Exception e){
+            return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
-        return new ResponseEntity(HttpStatus.OK);
     }
 
     /*
@@ -62,7 +58,7 @@ public class StorageController {
    So you must use the proper Endpoint.
     */
     @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
-    public Object sendMail(@RequestParam("attachments") List<MultipartFile> files
+    public ResponseEntity<Response>  sendMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("user") String user
             , @RequestParam("pwhash") String pwHash
             , @RequestParam("recipients") List<String> recipients
@@ -89,9 +85,9 @@ public class StorageController {
                     this.storeOutgoingFile(attachments, mailHeader);
                 }
             }
-            return new ResponseEntity(HttpStatus.OK);
+            return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));
     }
 
     private void storeTempFilesForOutbound(List<IncomingFiles> files, NewMail mailHeader) throws IOException, NoSuchAlgorithmException {

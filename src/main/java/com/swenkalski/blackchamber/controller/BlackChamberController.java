@@ -1,9 +1,6 @@
 package com.swenkalski.blackchamber.controller;
 
-import com.swenkalski.blackchamber.objects.Address;
-import com.swenkalski.blackchamber.objects.IncomingFiles;
-import com.swenkalski.blackchamber.objects.NewMail;
-import com.swenkalski.blackchamber.objects.Probe;
+import com.swenkalski.blackchamber.objects.*;
 import com.swenkalski.blackchamber.services.ProbeService;
 import com.swenkalski.blackchamber.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,33 +21,31 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String welcome() {
-        return "BlackChamber mailserver running";
+    public ResponseEntity<InformationResponse>  welcome() {
+        return ResponseEntity.ok(new InformationResponse(HttpStatus.OK, "BlackChamber 0.8.4"));
     }
 
-
-
     @RequestMapping(value = "/in/probe", method = RequestMethod.POST)
-    public ResponseEntity probeSendMail(@RequestBody Probe probeModel) {
+    public ResponseEntity<Response> probeSendMail(@RequestBody Probe probeModel) {
 
         ProbeService probeService = new ProbeService(null, null);
         if (!probeService.testProbeFromPossibleRecipient(probeModel)) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(new Response(HttpStatus.NOT_FOUND));
         }
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok(new Response(HttpStatus.OK));
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public ResponseEntity createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
+    public ResponseEntity<Response> createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) {
         UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (!userService.createUser()) {
-                return new ResponseEntity(HttpStatus.BAD_REQUEST);
+                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
             }
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
         }
-        return new ResponseEntity(HttpStatus.OK);
+        return ResponseEntity.ok(new Response(HttpStatus.OK));
     }
 
     @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
