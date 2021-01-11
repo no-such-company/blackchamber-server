@@ -1,4 +1,4 @@
-package com.swenkalski.blackchamber.objects;
+package com.swenkalski.blackchamber.objects.response;
 
 import lombok.Getter;
 import lombok.Setter;

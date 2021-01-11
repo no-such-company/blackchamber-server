@@ -1,10 +1,10 @@
 package com.swenkalski.blackchamber.controller;
 
 import com.swenkalski.blackchamber.helper.FileSystemHelper;
-import com.swenkalski.blackchamber.objects.Address;
-import com.swenkalski.blackchamber.objects.IncomingFiles;
-import com.swenkalski.blackchamber.objects.NewMail;
-import com.swenkalski.blackchamber.objects.Response;
+import com.swenkalski.blackchamber.objects.mailobjects.Address;
+import com.swenkalski.blackchamber.objects.mailobjects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
+import com.swenkalski.blackchamber.objects.response.Response;
 import com.swenkalski.blackchamber.services.ProbeService;
 import com.swenkalski.blackchamber.helper.ShaHelper;
 import com.swenkalski.blackchamber.services.SendService;
@@ -77,12 +77,13 @@ public class StorageController {
                 }
                 this.storeTempFilesForOutbound(attachments, mailHeader);
                 try {
+                    this.storeOutgoingFile(attachments, mailHeader);
                     SendService sendService = new SendService(mailHeader, attachments);
                     sendService.send();
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
-                    this.storeOutgoingFile(attachments, mailHeader);
+                    this.purgeOutgoingFiles(mailHeader);
                 }
             }
             return ResponseEntity.ok(new Response(HttpStatus.OK));
@@ -143,8 +144,10 @@ public class StorageController {
             File dest = new File(FileSystemHelper.getUserOutFolderWithFilename(mailHeader, file.getFile().getOriginalFilename()));
             copyFileUsingStream(file.getTempPath(), dest);
         }
-        deployMetaFile();
+    }
 
+    private void purgeOutgoingFiles(NewMail mailHeader){
+        deployMetaFile();
         purgeOutboundTempFiles(mailHeader);
     }
 

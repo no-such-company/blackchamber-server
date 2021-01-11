@@ -4,7 +4,7 @@ package com.swenkalski.blackchamber.controller;
     Twitter: @KalskiSwen    
 */
 
-import com.swenkalski.blackchamber.objects.InformationResponse;
+import com.swenkalski.blackchamber.objects.response.InformationResponse;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,27 +1,32 @@
 package com.swenkalski.blackchamber.services;
 
-import com.swenkalski.blackchamber.objects.IncomingFiles;
-import com.swenkalski.blackchamber.objects.NewMail;
-import com.swenkalski.blackchamber.objects.Probe;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.swenkalski.blackchamber.objects.mailobjects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
+import com.swenkalski.blackchamber.objects.mailobjects.Probe;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.swenkalski.blackchamber.helper.FileSystemHelper.folderExists;
+import static com.swenkalski.blackchamber.helper.FileSystemHelper.getUserFolder;
 import static com.swenkalski.blackchamber.helper.ProtocolHelper.getProtocol;
+import static com.swenkalski.blackchamber.helper.Sanitization.isHexHalfedSHA256;
+import static com.swenkalski.blackchamber.helper.Sanitization.isHexSHA256;
+import static com.swenkalski.blackchamber.helper.ShaHelper.getFileChecksum;
 
 public class ProbeService {
 
     public static final String IN_PROBE = ":1337/in/probe";
-    public static final String HTTPS = "https://";
 
     private final List<IncomingFiles> files;
     private final NewMail mailHeader;
@@ -42,19 +47,58 @@ public class ProbeService {
         List<String> hashes = new ArrayList<>();
 
         for (IncomingFiles file : files) {
-            hashes.add(file.getHash());
+            hashes.add(file.getHash().substring(0, 31));
         }
 
         map.put("attachments", hashes.toArray());
         ResponseEntity<Void> response = restTemplate.postForEntity(getProtocol(mailHeader.getSenderAddress().getHost()) +
                 mailHeader.getSenderAddress().getHost() +
                 IN_PROBE, map, Void.class);
-        return response.getStatusCode() == HttpStatus.OK;
+        if (response.getStatusCode() == HttpStatus.OK) {
+            JsonObject responseObject = new Gson().fromJson(response.getBody().toString(), JsonObject.class);
+            JsonArray attachments = responseObject.get("attachments").getAsJsonArray();
+
+            List<String> originalHashes = new ArrayList<>();
+            for (IncomingFiles file : files) {
+                for (JsonElement hash : attachments) {
+                    if (!isHexSHA256(hash.toString())) {
+                        return false;
+                    }
+                    if (file.getHash().equals(hash.toString())) {
+                        originalHashes.add(hash.toString());
+                    }
+                }
+            }
+            return attachments.size() != originalHashes.size();
+        }
+
+        return false;
     }
 
-    public boolean testProbeFromPossibleRecipient(Probe probe) {
-        return true;
+    public Probe testProbeFromPossibleRecipient(Probe probe) throws Exception {
+        if (!isHexSHA256(probe.getMailId())) {
+            return null;
+        }
+        if (folderExists(getUserFolder(probe.getSender() + "/out/" + probe.getMailId()))) {
+            return null;
+        }
+        File dir = new File(probe.getSender() + "/out/" + probe.getMailId());
+        List<String> originalHashes = new ArrayList<>();
+        for (File file : dir.listFiles()) {
+            for (String hash : probe.getAttachments()) {
+                if (!isHexHalfedSHA256(hash)) {
+                    return null;
+                }
+                String fileHash = getFileChecksum(file);
+                if (fileHash.contains(hash)) {
+                    originalHashes.add(fileHash);
+                }
+            }
+        }
+        if (probe.getAttachments().length != originalHashes.size()) {
+            return null;
+        }
+        probe.setAttachments(originalHashes.toArray(String[]::new));
+        return probe;
     }
-
-
 }

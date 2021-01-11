@@ -1,5 +1,6 @@
-package com.swenkalski.blackchamber.objects;
+package com.swenkalski.blackchamber.objects.mailobjects;
 
+import com.swenkalski.blackchamber.objects.mailobjects.Address;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -14,7 +15,7 @@ public class NewMail {
     private Address senderAddress;
     private Address recipientAddress;
 
-    public NewMail(String recipient, String sender, String mailId, Long time) {
+    public NewMail(String recipient, String sender, String mailId, Long time) throws Exception {
         this.recipient = recipient;
         this.sender = sender;
         this.mailId = mailId;

@@ -1,6 +1,6 @@
 package com.swenkalski.blackchamber.helper;
 
-import com.swenkalski.blackchamber.objects.NewMail;
+import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
 
 import java.io.*;
 import java.nio.file.Files;

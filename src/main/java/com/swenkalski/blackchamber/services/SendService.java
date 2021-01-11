@@ -1,8 +1,7 @@
 package com.swenkalski.blackchamber.services;
 
-import com.swenkalski.blackchamber.objects.IncomingFiles;
-import com.swenkalski.blackchamber.objects.NewMail;
-import org.springframework.core.io.ByteArrayResource;
+import com.swenkalski.blackchamber.objects.mailobjects.IncomingFiles;
+import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +14,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

@@ -1,10 +1,10 @@
 package com.swenkalski.blackchamber.services;
 
 import com.swenkalski.blackchamber.generator.RSAGen;
-import com.swenkalski.blackchamber.objects.Address;
-import com.swenkalski.blackchamber.objects.MailBox;
-import com.swenkalski.blackchamber.objects.MailFolder;
-import com.swenkalski.blackchamber.objects.UserInfo;
+import com.swenkalski.blackchamber.objects.mailobjects.Address;
+import com.swenkalski.blackchamber.objects.mailobjects.MailBox;
+import com.swenkalski.blackchamber.objects.mailobjects.MailFolder;
+import com.swenkalski.blackchamber.objects.mailobjects.UserInfo;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;

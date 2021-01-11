@@ -1,4 +1,4 @@
-package com.swenkalski.blackchamber.objects;
+package com.swenkalski.blackchamber.objects.mailobjects;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
