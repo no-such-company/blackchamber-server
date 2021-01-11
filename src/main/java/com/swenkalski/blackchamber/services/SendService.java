@@ -30,10 +30,9 @@ public class SendService {
         this.files = files;
     }
 
-    public ResponseEntity<String> send() throws IOException {
+    public ResponseEntity<Void> send(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-        headers.set("Accept", "text/plain");
 
         MultiValueMap<String, Object> body
                 = new LinkedMultiValueMap<>();
@@ -56,6 +55,6 @@ public class SendService {
 
 
         RestTemplate restTemplate = new RestTemplate();
-        return restTemplate.postForEntity(uri, requestEntity, String.class);
+        return restTemplate.postForEntity(uri, requestEntity, Void.class);
     }
 }

@@ -15,18 +15,18 @@ public class FileSystemHelper {
     private static final String SEPARATOR = "/";
 
     public static String getUserInFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailHash() + SEPARATOR + fileName;
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId() + SEPARATOR + fileName;
     }
 
     public static String getUserInFolderWithFilename(NewMail mailHeader) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailHash();
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId();
     }
 
     public static String getUserOutFolder(NewMail mailHeader) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailHash();
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailId();
     }
     public static String getUserOutFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailHash() + SEPARATOR + fileName;
+        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailId() + SEPARATOR + fileName;
     }
 
     public static String getUserFolder(String username) throws Exception {
@@ -34,11 +34,11 @@ public class FileSystemHelper {
     }
 
     public static String getTempFolderForIncomingMail(NewMail mailHeader) {
-        return DOVECOTE_TEMP + mailHeader.getMailHash();
+        return DOVECOTE_TEMP + mailHeader.getMailId();
     }
 
     public static String getTempFolderForOutboundMail(NewMail mailHeader) {
-        return DOVECOTE_TEMP + mailHeader.getMailHash()+"--OUT";
+        return DOVECOTE_TEMP + mailHeader.getMailId()+"--OUT";
     }
 
     public static boolean createUserFolder(String username) throws Exception {

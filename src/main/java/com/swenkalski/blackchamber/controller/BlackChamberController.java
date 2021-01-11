@@ -1,5 +1,6 @@
 package com.swenkalski.blackchamber.controller;
 
+import com.google.gson.Gson;
 import com.swenkalski.blackchamber.objects.mailobjects.Probe;
 import com.swenkalski.blackchamber.objects.response.InformationResponse;
 import com.swenkalski.blackchamber.objects.response.Response;
@@ -30,14 +31,15 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/in/probe", method = RequestMethod.POST)
-    public ResponseEntity<Probe> probeSendMail(@RequestParam("attachments") String[] files
+    public ResponseEntity<String> probeSendMail(@RequestParam("attachments") String[] files
             , @RequestParam("sender") String sender
             , @RequestParam("recipient") String recipient
             , @RequestParam("mailId") String mailId) throws Exception {
 
         ProbeService probeService = new ProbeService(null, null);
         Probe probe = new Probe(mailId, sender, recipient, files);
-        return ResponseEntity.ok(probeService.testProbeFromPossibleRecipient(probe));
+        Gson gson = new Gson();
+        return new ResponseEntity<String>(gson.toJson(probeService.testProbeFromPossibleRecipient(probe)), new HttpHeaders(), HttpStatus.OK);
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)

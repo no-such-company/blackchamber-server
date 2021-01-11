@@ -13,7 +13,7 @@ public class Sanitization {
     }
 
     public static boolean isHexHalfedSHA256(String pattern){
-        return Pattern.compile("\\b[A-Fa-f0-9]{32}\\b").matcher(pattern).matches();
+        return Pattern.compile("\\b[A-Fa-f0-9]{31}\\b").matcher(pattern).matches();
     }
 
     public static boolean isSMailAddress(String pattern){
@@ -25,6 +25,9 @@ public class Sanitization {
     }
 
     public static boolean isDomain(String pattern){
+        if(pattern.equals("localhost")){
+            return true;
+        }
         return Pattern.compile("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$").matcher(pattern).matches();
     }
 

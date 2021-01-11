@@ -23,10 +23,4 @@ public class NewMail {
         this.senderAddress = new Address(sender);
         this.recipientAddress = new Address(recipient);
     }
-
-    public String getMailHash() {
-        return DigestUtils.md5Hex(mailId+time).toUpperCase();
-    }
-
-
 }
