@@ -32,18 +32,19 @@ In general, the server only comes into contact with the encrypted material and d
 
 ## Current status
 
-* [ ] build API
+* [x] build API
 * [ ] write tests
 * [ ] attach Postman-Workflow for integration test
 * [ ] publish sources on Github
 * [ ] create first running client for Android
 * [ ] setup first running service for public users
 
-## release plan
+## Release plan
 
 * [ ] finish work for BlackChamber 
-* [ ] finish work on Android-App
+* [ ] finish work on Android-App / Linux
 * [ ] publish of Android app as Beta
+* [ ] publish of Linux app as Beta
 * [ ] after two month publish JAR to make People able to use own Server (Companies have to pay 600€ per year0
 * [ ] start as real company
 * [ ] after three month publish API for creators
@@ -54,11 +55,11 @@ In general, the server only comes into contact with the encrypted material and d
 
 ### FAQ
 * **why?** GOV's always read our Mails on demand. Since the first letters was sended they tried to read them. With the new possibilities it is impossible now.
-The first Time in history it is (mostly) not longer possible to take control, because everyone can use Dovecote for his own with ease.
+The first Time in history it is (mostly) not longer possible to take control, because everyone can use BlackChamber for his own with ease.
 * **But terrorists...?** Reading Mails was always claimed as a proper way to avoid this issues. But there is no incident ever, that was prevented by reading mails.   
 * **But Pedo...?** Nope... never... these a$$hole$ use other ways
 * **But Druglords?** Also nope...
-* **Does it really not support crime?** Yes it do. In the same way as Car Manufacturer support Drugdealer by give them a way to drive around.
+* **Does it supports crime?** Yes it does. In the same way as Car Manufacturer support Drugdealer by give them a way to drive around.
 
 
 TL:DR;
@@ -69,7 +70,7 @@ TL:DR;
 MFE accepts JSON with File transfer via HTTPS:7331.
 All Files are encrypted with PGP based on the public key of the recipient of the massage.
 The Recipient is mentions with these pattern:
-```url.com//someone```
+```url.com//:someone```
 
 The url can be any common url. The name (someone it this example) should only `accept a-z0-9.-_`
 
@@ -181,11 +182,12 @@ The JSON example:
 
 ### create new user
 
-`@RequestMapping(value = "/inbox/create", method = RequestMethod.POST)`
+* `@RequestMapping(value = "/inbox/create", method = RequestMethod.POST)`
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
+* `@RequestParam("keyHash") String keyHash)` passphrase for PGP Key (SHA-256)/HEX
 
-`@RequestParam("user") String user` username with domain
-`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
-
+PGP Key phrase and Mailbox password cannot be equals.
 Creates a new user and setup the needed filestructure. Also the public and private key will be created.
 The key can be changed later with own keys to improve security.
 

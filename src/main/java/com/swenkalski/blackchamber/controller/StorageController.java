@@ -30,7 +30,6 @@ import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
 @RestController
 public class StorageController {
 
-
     @RequestMapping(value = "/in", method = RequestMethod.POST)
     public ResponseEntity<Response>  handleNewMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("sender") String sender
@@ -177,7 +176,6 @@ public class StorageController {
     private String fetchHashOfFile(File file) throws NoSuchAlgorithmException, IOException {
         return ShaHelper.getFileChecksum(file);
     }
-
 
     private void deleteDirectory(File directoryToBeDeleted) {
         File[] allContents = directoryToBeDeleted.listFiles();

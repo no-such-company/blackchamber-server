@@ -142,10 +142,17 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
     public Object renewInboxKeys(@RequestParam("user") String user,
-                                 @RequestParam("hash") String pwhash,
-                                 @RequestParam("pub") MultipartFile pubKey,
-                                 @RequestParam("priv") MultipartFile privKey) {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+                                 @RequestParam("hash") String pwHash,
+                                 @RequestParam("keyHash") String keyHash) throws Exception {
+        UserService userService = new UserService(pwHash, keyHash, new Address(user));
+        try {
+            if (!userService.renewKey()) {
+                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+        }
+        return ResponseEntity.ok(new Response(HttpStatus.OK));
     }
 
     @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)

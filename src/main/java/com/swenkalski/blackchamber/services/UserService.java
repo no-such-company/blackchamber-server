@@ -53,6 +53,14 @@ public class UserService {
         return true;
     }
 
+    public boolean renewKey() throws Exception {
+        if(keyPw == null || keyPw.equals("") || keyPw.equals(pw)){
+            throw new Exception();
+        }
+        createKeys();
+        return true;
+    }
+
     public boolean validateUser() throws Exception {
         if (!folderExists(getUserFolder(user.getUser()))) {
             return false;
