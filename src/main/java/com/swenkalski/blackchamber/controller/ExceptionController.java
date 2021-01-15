@@ -5,6 +5,7 @@ package com.swenkalski.blackchamber.controller;
 */
 
 import com.swenkalski.blackchamber.objects.response.InformationResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,12 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class ExceptionController implements ErrorController {
 
+    @Value("${bc.version}")
+    private String version;
+
     @RequestMapping("/error")
     public ResponseEntity<InformationResponse> handleError(HttpServletRequest request) {
-        return ResponseEntity.ok(new InformationResponse(HttpStatus.FORBIDDEN, "BlackChamber 0.8.4"));
+        return ResponseEntity.ok(new InformationResponse(HttpStatus.FORBIDDEN, version));
     }
 
     @Override

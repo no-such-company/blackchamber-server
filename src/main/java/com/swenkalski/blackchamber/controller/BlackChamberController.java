@@ -7,6 +7,7 @@ import com.swenkalski.blackchamber.objects.response.Response;
 import com.swenkalski.blackchamber.services.ProbeService;
 import com.swenkalski.blackchamber.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import com.swenkalski.blackchamber.objects.mailobjects.Address;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,8 @@ import java.util.List;
 @RestController
 public class BlackChamberController {
 
+    @Value("${bc.version}")
+    private String version;
 
     @Autowired
     public BlackChamberController() {
@@ -27,7 +30,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<InformationResponse> welcome() {
-        return ResponseEntity.ok(new InformationResponse(HttpStatus.OK, "BlackChamber 0.8.4"));
+        return ResponseEntity.ok(new InformationResponse(HttpStatus.OK, version));
     }
 
     @RequestMapping(value = "/in/probe", method = RequestMethod.POST)
@@ -43,8 +46,8 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public ResponseEntity<Response> createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+    public ResponseEntity<Response> createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("keyHash") String keyHash) throws Exception {
+        UserService userService = new UserService(pwHash, keyHash, new Address(user));
         try {
             if (!userService.createUser()) {
                 return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
@@ -130,19 +133,19 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
-    public String replaceInboxKeys(@RequestParam("user") String user,
+    public Object replaceInboxKeys(@RequestParam("user") String user,
                                    @RequestParam("hash") String pwhash,
                                    @RequestParam("pub") MultipartFile pubKey,
                                    @RequestParam("priv") MultipartFile privKey) {
-        return "JSON";
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
-    public String renewInboxKeys(@RequestParam("user") String user,
+    public Object renewInboxKeys(@RequestParam("user") String user,
                                  @RequestParam("hash") String pwhash,
                                  @RequestParam("pub") MultipartFile pubKey,
                                  @RequestParam("priv") MultipartFile privKey) {
-        return "JSON";
+        return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
     @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)

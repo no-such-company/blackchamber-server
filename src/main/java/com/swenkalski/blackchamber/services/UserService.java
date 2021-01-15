@@ -28,6 +28,13 @@ public class UserService {
     public static final String PW = ".pw";
     private String pw;
     private Address user;
+    private String keyPw;
+
+    public UserService(String pw, String keyPw, Address user) {
+        this.pw = pw;
+        this.user = user;
+        this.keyPw = keyPw;
+    }
 
     public UserService(String pw, Address user) {
         this.pw = pw;
@@ -35,6 +42,9 @@ public class UserService {
     }
 
     public boolean createUser() throws Exception {
+        if(keyPw == null || keyPw.equals("") || keyPw.equals(pw)){
+            throw new Exception();
+        }
         if (!createUserFolder(user.getUser())) {
             return false;
         }
@@ -112,7 +122,7 @@ public class UserService {
     }
 
     private void createKeys() throws Exception {
-        RSAGen.createKeyPair(getHash(pw), user.getUser());
+        RSAGen.createKeyPair(getHash(keyPw), user.getUser());
     }
 
     private boolean checkCredentials() throws Exception {

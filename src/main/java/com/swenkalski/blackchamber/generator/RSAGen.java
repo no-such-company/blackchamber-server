@@ -38,7 +38,6 @@ public class RSAGen {
         char pass[] = passWd.toCharArray();
         PGPKeyRingGenerator krgen = generateKeyRingGenerator(user, pass);
 
-        // Generate public key ring, and store to users files.
         PGPPublicKeyRing pkr = krgen.generatePublicKeyRing();
         ArmoredOutputStream pubout = new ArmoredOutputStream(
                 new BufferedOutputStream(new FileOutputStream(FileSystemHelper.getUserFolder(user) + PUB_ASC)));

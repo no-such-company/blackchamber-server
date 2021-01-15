@@ -17,9 +17,9 @@ public class InformationResponse {
     private String author = "Swen Kalski";
     private String copyright ="(c) 2020 by Swen Kalski";
 
-    public InformationResponse(HttpStatus httpStatus, String versionInfo) {
+    public InformationResponse(HttpStatus httpStatus, String version) {
         this.returncode = httpStatus.value();
         this.message = httpStatus.getReasonPhrase();
-        this.versionInfo = versionInfo;
+        this.versionInfo = version;
     }
 }

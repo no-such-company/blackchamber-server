@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.swenkalski</groupId>
     <artifactId>blackchamber</artifactId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.8.6-SNAPSHOT</version>
 
     <properties>
         <java.version>15</java.version>
@@ -63,6 +63,12 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
