@@ -30,8 +30,11 @@ import static com.swenkalski.blackchamber.helper.ShaHelper.getHash;
 @RestController
 public class StorageController {
 
+    public static final String PUB_ASC = "pub.asc";
+    public static final String KEY_SKR = "key.skr";
+
     @RequestMapping(value = "/in", method = RequestMethod.POST)
-    public ResponseEntity<Response>  handleNewMail(@RequestParam("attachments") List<MultipartFile> files
+    public ResponseEntity<Response> handleNewMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("sender") String sender
             , @RequestParam("recipient") String recipient
             , @RequestParam("mailId") String mailId) {
@@ -47,7 +50,7 @@ public class StorageController {
             }
             this.storeFileTemp(attachments, mailHeader);
             return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
-        } catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
     }
@@ -57,7 +60,7 @@ public class StorageController {
    So you must use the proper Endpoint.
     */
     @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
-    public ResponseEntity<Response>  sendMail(@RequestParam("attachments") List<MultipartFile> files
+    public ResponseEntity<Response> sendMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("user") String user
             , @RequestParam("pwhash") String pwHash
             , @RequestParam("recipients") List<String> recipients
@@ -90,6 +93,27 @@ public class StorageController {
         return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));
     }
 
+    @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
+    public ResponseEntity<Response> replaceInboxKeys(@RequestParam("user") String user,
+                                                     @RequestParam("hash") String pwHash,
+                                                     @RequestParam("pub") MultipartFile pubKey,
+                                                     @RequestParam("priv") MultipartFile privKey) throws Exception {
+        UserService userService = new UserService(pwHash, new Address(user));
+        if (userService.validateUser()) {
+            Address address = new Address(user);
+            if (privKey.getOriginalFilename().equals(KEY_SKR) && pubKey.getOriginalFilename().equals(PUB_ASC)) {
+                File dest = new File(FileSystemHelper.getUserInFolderByName(address, pubKey.getOriginalFilename()));
+                copyFileUsingStream(pubKey.getResource().getFile(), dest);
+
+                dest = new File(FileSystemHelper.getUserInFolderByName(address, privKey.getOriginalFilename()));
+                copyFileUsingStream(privKey.getResource().getFile(), dest);
+
+                return ResponseEntity.ok(new Response(HttpStatus.OK));
+            }
+        }
+        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));
+    }
+
     private void storeTempFilesForOutbound(List<IncomingFiles> files, NewMail mailHeader) throws IOException, NoSuchAlgorithmException {
         createFolder(FileSystemHelper.getTempFolderForOutboundMail(mailHeader));
         for (IncomingFiles file : files) {
@@ -107,7 +131,7 @@ public class StorageController {
         }
     }
 
-    private void storeFileTemp(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
+    private void storeFileTemp(List<IncomingFiles> files, NewMail mailHeader) throws Exception {
         createFolder(FileSystemHelper.getTempFolderForIncomingMail(mailHeader));
         for (IncomingFiles file : files) {
             File dest = new File(FileSystemHelper.getTempFolderForIncomingMail(mailHeader) + "/" + file.getFile().getOriginalFilename());
@@ -135,7 +159,7 @@ public class StorageController {
         }
     }
 
-    private void storeOutgoingFile(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
+    private void storeOutgoingFile(List<IncomingFiles> files, NewMail mailHeader) throws Exception {
         createFolder(getUserOutFolder(mailHeader));
 
         for (IncomingFiles file : files) {
@@ -145,12 +169,12 @@ public class StorageController {
         }
     }
 
-    private void purgeOutgoingFiles(NewMail mailHeader){
+    private void purgeOutgoingFiles(NewMail mailHeader) {
         deployMetaFile();
         purgeOutboundTempFiles(mailHeader);
     }
 
-    private void deployFiles(List<IncomingFiles>files, NewMail mailHeader) throws Exception {
+    private void deployFiles(List<IncomingFiles> files, NewMail mailHeader) throws Exception {
         createFolder(getUserInFolderWithFilename(mailHeader));
 
         for (IncomingFiles file : files) {

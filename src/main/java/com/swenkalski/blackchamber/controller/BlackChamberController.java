@@ -128,14 +128,6 @@ public class BlackChamberController {
         return new ResponseEntity(HttpStatus.BAD_REQUEST);
     }
 
-    @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
-    public Object replaceInboxKeys(@RequestParam("user") String user,
-                                   @RequestParam("hash") String pwhash,
-                                   @RequestParam("pub") MultipartFile pubKey,
-                                   @RequestParam("priv") MultipartFile privKey) {
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
-    }
-
     @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
     public Object renewInboxKeys(@RequestParam("user") String user,
                                  @RequestParam("hash") String pwHash,

@@ -1,5 +1,6 @@
 package com.swenkalski.blackchamber.helper;
 
+import com.swenkalski.blackchamber.objects.mailobjects.Address;
 import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
 
 import java.io.*;
@@ -16,6 +17,10 @@ public class FileSystemHelper {
 
     public static String getUserInFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
         return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId() + SEPARATOR + fileName;
+    }
+
+    public static String getUserInFolderByName(Address address, String filename) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(address.getUser()) + SEPARATOR + filename;
     }
 
     public static String getUserInFolderWithFilename(NewMail mailHeader) throws Exception {
