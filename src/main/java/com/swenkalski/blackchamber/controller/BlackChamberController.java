@@ -24,10 +24,6 @@ public class BlackChamberController {
     @Value("${bc.version}")
     private String version;
 
-    @Autowired
-    public BlackChamberController() {
-    }
-
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<InformationResponse> welcome() {
         return ResponseEntity.ok(new InformationResponse(HttpStatus.OK, version));
