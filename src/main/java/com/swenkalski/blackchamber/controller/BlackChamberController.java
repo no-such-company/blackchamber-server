@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static com.swenkalski.blackchamber.helper.Sanitization.isValidFolderNamePattern;
+
 @RestController
 public class BlackChamberController {
 
@@ -198,7 +200,7 @@ public class BlackChamberController {
     public Object moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("dest") String dest) throws Exception {
         UserService userService = new UserService(pwHash, new Address(user));
         try {
-            if (userService.validateUser()) {
+            if (userService.validateUser() && isValidFolderNamePattern(dest)) {
                 userService.move(mailId, dest);
             } else {
                 return new ResponseEntity(HttpStatus.BAD_REQUEST);
