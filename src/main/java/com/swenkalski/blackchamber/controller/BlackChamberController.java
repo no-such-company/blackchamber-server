@@ -144,16 +144,16 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)
-    public Object fetchInboxList(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
+    public ResponseEntity<Object> fetchInboxList(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
         UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
-                return userService.getUserInformation();
+                return ResponseEntity.ok(userService.getMailFolders());
             }
         } catch (Exception e) {
-            return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
         }
-        return new ResponseEntity(HttpStatus.BAD_REQUEST);
+        return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
     }
 
     @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
