@@ -2,7 +2,7 @@
 
 ## Server for Message File Exchange with SMail
 
-* Test: ![Test](https://github.com/no-such-company/blackchamber-server/workflows/Test/badge.svg)
+![Test](https://github.com/no-such-company/blackchamber-server/workflows/Test/badge.svg) ![Java CI with Maven](https://github.com/no-such-company/blackchamber-server/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 ### Black Chamber?
 The Black Chamber (1919–1929), also known as the Cipher Bureau, was the United States' first peacetime 
