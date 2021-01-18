@@ -170,7 +170,8 @@ The JSON example:
 
 ### create new user
 
-* `@RequestMapping(value = "/inbox/create", method = RequestMethod.POST)`
+`@RequestMapping(value = "/inbox/create", method = RequestMethod.POST)`
+
 * `@RequestParam("user") String user` username with domain
 * `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
 * `@RequestParam("keyHash") String keyHash)` passphrase for PGP Key (SHA-256)/HEX
@@ -183,8 +184,8 @@ The key can be changed later with own keys to improve security.
 
 `@RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)`
 
-`@RequestParam("user") String user` username with domain
-`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX 
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX 
 
 Delete all informations and files from user (can't be undone)
 
@@ -192,67 +193,101 @@ Delete all informations and files from user (can't be undone)
 
 `@RequestMapping(value = "/inbox/info", method = RequestMethod.POST)`
 
-`@RequestParam("user") String user` username with domain
-`@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
 
 Fetch some useful information from the authenticated User, like amount of files and the
 overall filesize of all Files that are dedicated to the User.
 
-    @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user) {
-        return "JSON";
-    }
+### fetch public key from a possible recipient
 
-    @RequestMapping(value = "/inbox/privkey", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
-    }
+`@RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)`
 
-    @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
-    public String fetchInboxPubKey(@RequestParam("user") String user,
-                                   @RequestParam("hash") String pwhash,
-                                   @RequestParam("pub") MultipartFile pubKey,
-                                   @RequestParam("priv") MultipartFile privKey) {
-        return "JSON";
-    }
+* `@RequestParam("user")` username of recipient with domain
 
-    @RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)
-    public String renewInboxKeys(@RequestParam("user") String user,
-                                   @RequestParam("hash") String pwhash,
-                                   @RequestParam("pub") MultipartFile pubKey,
-                                   @RequestParam("priv") MultipartFile privKey) {
-        return "JSON";
-    }
+### fetch own private key
 
-    @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)
-    public String fetchInboxList(@RequestParam("user") String user, @RequestParam("hash") String pwhash) {
-        return "JSON";
-    }
+`@RequestMapping(value = "/inbox/privkey", method = RequestMethod.POST)`
 
-    @RequestMapping(value = "/inbox/mail", method = RequestMethod.POST)
-    public String fetchMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
-    }
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase or user (SHA-256)/HEX
 
-    @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
-    public String fetchMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId) {
-        return "JSON";
-    }
+### add own keypair from other source
 
-    @RequestMapping(value = "/inbox/mail/remove", method = RequestMethod.POST)
-    public String removeMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
-    }
+`@RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)`
 
-    @RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)
-    public String moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwhash, @RequestParam("mailId") String mailId) {
-        return "JSON";
-    }
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash` passphrase or user (SHA-256)/HEX
+* `@RequestParam("pub") MultipartFile pubKey` a public key file (must named: )
+* `@RequestParam("priv") MultipartFile privKey)` a private key file (must named: )
 
-    @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
-    public String sendMail(@RequestParam("attachments") List<MultipartFile> files
-            , @RequestParam("user") String user
-            , @RequestParam("recipients") List<String> recipients
-    ) {
-        return "JSON";
-    }
+This option add some more security. So you can create own keys without trusting the mailserver owner.
+Keep in mind, that you have to add a passphrase to the private key, because future mail clients will not work
+without.
+
+### renew keys on server
+
+`@RequestMapping(value = "/inbox/renewkeys", method = RequestMethod.POST)`
+
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
+* `@RequestParam("keyHash") String keyHash)` passphrase for PGP Key (SHA-256)/HEX
+
+Could be used to create a new keypair and overwrite the existsing.
+
+**!!! Keep in mind, that all mails before could not longer be decrypted !!!**
+
+### fetch map of all mailID's with folders
+
+`@RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)`
+
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
+
+Retireve a JSON with all Folders and the ID hashes of the mails in it.
+
+### fetch mail content
+`@RequestMapping(value = "/inbox/mail", method = RequestMethod.POST)`
+
+* `@RequestParam("mailId") String mailId` ID of the mail, that should be fetched
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
+
+Return all filenames inside the mailID
+
+### fetch file from mailID
+
+`@RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)`
+
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash` passphrase for Mailboxfuctions (SHA-256)/HEX
+* `@RequestParam("mailId") String mailId` ID of the Mail
+* `@RequestParam("fileId") String fileId` ID of the File
+  
+Fetch a specific file regarding to the mail ID
+
+### remove Mail from server
+
+`@RequestMapping(value = "/inbox/mail/remove", method = RequestMethod.POST)`
+
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash` passphrase for Mailboxfuctions (SHA-256)/HEX
+* `@RequestParam("mailId") String mailId` ID of the Mail
+
+### move mail to new folder
+
+`@RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)`
+
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("hash") String pwhash` passphrase for Mailboxfuctions (SHA-256)/HEX
+* `@RequestParam("mailId") String mailId` ID of the Mail
+* `@RequestParam("dest") String dest` String of the new destination for the Mail
+
+### send a mail
+
+`@RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)`
+
+* `@RequestParam("attachments") List<MultipartFile> files` files with the mail content
+* `@RequestParam("user") String user` username with domain
+* `@RequestParam("recipients") List<String> recipients` list of recipient (actually we can just use one, becuase of the encryption.)
+
