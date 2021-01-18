@@ -48,4 +48,8 @@ public class Sanitization {
     public static boolean isUser(String pattern){
         return Pattern.compile("^(?=[a-zA-Z0-9._]{8,20}$)(?!.*[_.]{2})[^_.].*[^_.]$").matcher(pattern).matches();
     }
+
+    public static boolean isValidFolderNamePattern(String pattern){
+        return Pattern.compile("^[a-zA-Zа-яА-Я0-9_!]+$").matcher(pattern).matches();
+    }
 }
