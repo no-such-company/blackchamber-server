@@ -39,7 +39,9 @@ In general, the server only comes into contact with the encrypted material and d
 * [ ] create first running client for Android
 * [ ] setup first running service for public users
 
+### Licence
 
+Please read license.txt before use.
 
 ### FAQ
 * **why?** GOV's always read our Mails on demand. Since the first letters was sended they tried to read them. With the new possibilities it is impossible now.

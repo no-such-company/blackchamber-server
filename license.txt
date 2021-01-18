@@ -1,0 +1,43 @@
+License for the use BlackChamber
+
+[1] What is BlackChamber
+
+BlackChamber (BC) is a server that ensures the transport of PGP protected content.
+For this purpose, clear names are not used and the transport is mapped as far as possible via hash values.
+To use this service special client programs have to be used.
+
+[2] Responsibility
+
+BC is mainly developed by Swen Kalski. However, from time to time he can add additional
+developers to the development.
+
+[3] Who may use BC
+
+BC can be used by everyone. The API endpoints are protected in connection with the
+specified PORT 1337 from the date of first release and may only be used if they match the
+original system in scope and security promise.
+
+[4] Cost
+
+BC is funded by Swen Kalski and servers may be used by any private person. Swen Kalski and later companies,
+which are financial supporters of BC and own BC as legal property, have the right to charge an annual license fee of 1024 €
+to companies with a turnover of more than 10.000 € per year or a correspondingly high reputation or market value.
+This licensing clause will be communicated to the companies concerned at least 6 months before it comes into force.
+
+[5] further developments
+
+Extensions of the server with the aim to create compatible systems are (if [4] applies) subject to the creation of this license.
+
+The further development must not entail any weakening of the functionality consciously/unconsciously. In this case, the software may
+not be marketed as a SMail/BlackChamber compatible system.
+Failure to comply with this rule constitutes a violation of this license and obligates the operator/developer to discontinue the used
+software under penalty of at least 40 annual licenses plus court costs.
+
+[6] forks
+
+forks with the purpose of developing a compatible competing product outside the Smail communication structure are
+prohibited if they are created with the intent/unconscious purpose of evading a license.
+Any revenue generated will automatically accrue to the developer of BC.
+
+Fork is still allowed for private developers to create their own private structures not accessible from the internet.
+
