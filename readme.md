@@ -39,18 +39,6 @@ In general, the server only comes into contact with the encrypted material and d
 * [ ] create first running client for Android
 * [ ] setup first running service for public users
 
-## Release plan
-
-* [ ] finish work for BlackChamber 
-* [ ] finish work on Android-App / Linux
-* [ ] publish of Android app as Beta
-* [ ] publish of Linux app as Beta
-* [ ] after two month publish JAR to make People able to use own Server (Companies have to pay 600€ per year0
-* [ ] start as real company
-* [ ] after three month publish API for creators
-* [ ] App isn't beta anymore
-* [ ] after one year publish sourcecode
-
 
 
 ### FAQ
