@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.swenkalski</groupId>
     <artifactId>blackchamber</artifactId>
-    <version>21.1.4</version>
+    <version>21.1.5-SNAPSHOT</version>
 
     <properties>
         <java.version>15</java.version>

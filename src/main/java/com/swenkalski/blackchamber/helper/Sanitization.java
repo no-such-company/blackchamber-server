@@ -21,7 +21,7 @@ public class Sanitization {
         if(testPatters.length != 2){
             return false;
         }
-        return (isDomain(testPatters[0]) && isUser(testPatters[0]));
+        return (isDomain(testPatters[0]) && isUser(testPatters[1]));
     }
 
     public static boolean isDomain(String pattern){
