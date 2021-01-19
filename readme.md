@@ -48,9 +48,8 @@ Please read license.txt before use.
 ### FAQ
 * **why?** GOV's always read our Mails on demand. Since the first letters was sended they tried to read them. With the new possibilities it is impossible now.
 The first Time in history it is (mostly) not longer possible to take control, because everyone can use BlackChamber for his own with ease.
-* **But terrorists...?** Reading Mails was always claimed as a proper way to avoid this issues. But there is no incident ever, that was prevented by reading mails.   
-* **But Pedo...?** Nope... never... these a$$hole$ use other ways
-* **But Druglords?** Also nope...
+* **But terrorists...?** Reading Mails was always claimed as a proper way to avoid this issues. But there is no incident ever, that was prevented by reading mails.
+* **But criminals...?** Also nope...
 * **Does it supports crime?** Yes it does. In the same way as Car Manufacturer support Drugdealer by give them a way to drive around.
 
 
@@ -59,7 +58,7 @@ TL:DR;
 **This Software make sure that an Email isn't longer a postcard. Nothing more, nothing less!**
 
 ### How it Works
-MFE accepts JSON with File transfer via HTTPS:7331.
+BlackChamber accepts JSON with File transfer via HTTPS:7331.
 All Files are encrypted with PGP based on the public key of the recipient of the massage.
 The Recipient is mentions with these pattern:
 ```url.com//:someone```
@@ -81,7 +80,7 @@ Within the file there are an encrypted file with the Email text named `msg` and 
 All other Files are also encrypted.
 
 
-The recipient MFE Server will now ask the sending Server if it was really send by the sender by sending the `mailid`.
+The recipient BlackChamber Server will now ask the sending Server if it was really send by the sender by sending the `mailid`.
 GET `somewhere.org/proof/somestring_including_timecode`
 
 The Sender should now confirm with JSON Content:
@@ -99,12 +98,12 @@ The Sender should now confirm with JSON Content:
 }
 ```
 The recipient can check every file for the hash
-`SMail_comp` is very important. With the boolean the sender will agree, that the original Dovekeeper Software is 
+`SMail_comp` is very important. With the boolean the sender will agree, that the original BlackChamber Software is 
 used und completly untapperd and no violation to break the procedure was done.
 If it is TRUE and the Software is tampered or seized the owner can be sued. Also the Sender domain will be blacklisted and further 
-Dovekeeper does not accept any Message send by this Domain.
+BlackChamber does not accept any Message send by this Domain.
 
-The files will be stored by the Dovekeeper in the following pattern:
+The files will be stored by the BlackChamber in the following pattern:
 
 ```
 dovecote/
