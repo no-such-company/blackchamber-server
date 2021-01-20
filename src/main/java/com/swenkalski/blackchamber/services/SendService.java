@@ -2,6 +2,7 @@ package com.swenkalski.blackchamber.services;
 
 import com.swenkalski.blackchamber.objects.mailobjects.IncomingFiles;
 import com.swenkalski.blackchamber.objects.mailobjects.NewMail;
+import com.swenkalski.blackchamber.objects.mailobjects.OutgoingFiles;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -23,9 +24,9 @@ import static com.swenkalski.blackchamber.helper.ProtocolHelper.getProtocol;
 public class SendService {
 
     private final NewMail mail;
-    private final List<IncomingFiles> files;
+    private final List<OutgoingFiles> files;
 
-    public SendService(NewMail mail, List<IncomingFiles> files) {
+    public SendService(NewMail mail, List<OutgoingFiles> files) {
         this.mail = mail;
         this.files = files;
     }
@@ -36,7 +37,7 @@ public class SendService {
 
         MultiValueMap<String, Object> body
                 = new LinkedMultiValueMap<>();
-        for (IncomingFiles file : files) {
+        for (OutgoingFiles file : files) {
             body.add("attachments", new FileSystemResource(file.getTempPath().toPath()));
         }
 

@@ -27,11 +27,12 @@ public class FileSystemHelper {
         return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId();
     }
 
-    public static String getUserOutFolder(NewMail mailHeader) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailId();
+    public static String getUserOutFolder(String mailId, String user) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(new Address(user).getUser()) + OUT + mailId;
     }
-    public static String getUserOutFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getSenderAddress().getUser()) + OUT + mailHeader.getMailId() + SEPARATOR + fileName;
+
+    public static String getUserOutFolderWithFilename(String mailId, String user, String fileName) throws Exception {
+        return DOVECOTE + ShaHelper.getHash(new Address(user).getUser()) + OUT + mailId + SEPARATOR + fileName;
     }
 
     public static String getUserFolder(String username) throws Exception {
@@ -42,8 +43,8 @@ public class FileSystemHelper {
         return DOVECOTE_TEMP + mailHeader.getMailId();
     }
 
-    public static String getTempFolderForOutboundMail(NewMail mailHeader) {
-        return DOVECOTE_TEMP + mailHeader.getMailId()+"--OUT";
+    public static String getTempFolderForOutboundMail(String mailId) {
+        return DOVECOTE_TEMP + mailId + "--OUT";
     }
 
     public static boolean createUserFolder(String username) throws Exception {
