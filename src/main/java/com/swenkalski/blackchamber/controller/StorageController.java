@@ -1,5 +1,6 @@
 package com.swenkalski.blackchamber.controller;
 
+import com.google.gson.Gson;
 import com.swenkalski.blackchamber.helper.FileSystemHelper;
 import com.swenkalski.blackchamber.objects.mailobjects.Address;
 import com.swenkalski.blackchamber.objects.mailobjects.IncomingFiles;
@@ -12,14 +13,16 @@ import com.swenkalski.blackchamber.helper.ShaHelper;
 import com.swenkalski.blackchamber.services.SendService;
 import com.swenkalski.blackchamber.services.UserService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.bouncycastle.util.io.Streams;
+import org.pgpainless.PGPainless;
+import org.pgpainless.encryption_signing.EncryptionStream;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -90,7 +93,21 @@ public class StorageController {
                 }
             }
             this.purgeOutgoingFiles(mailId);
-            getMetaEncryptedFiles(new OutBoxMeta(new Date().getTime(), recipients ,mailId));
+            Gson gson = new Gson();
+            OutputStream outputStream = new FileOutputStream("test");
+            EncryptionStream encryptor = PGPainless.encryptAndOrSign()
+                    .onOutputStream(outputStream)
+                    .toRecipients( PGPainless.readKeyRing().publicKeyRing("test"))
+                    .usingSecureAlgorithms()
+                    .signWith(PGPainless.readKeyRing().secretKeyRing("test").getSecretKey())
+                    .signBinaryDocument()
+                    .noArmor();
+
+            InputStream sourceInputStream = new ByteArrayInputStream(gson.toJson(new OutBoxMeta(new Date().getTime(), recipients, mailId)).getBytes(StandardCharsets.UTF_8));
+            Streams.pipeAll(sourceInputStream, encryptor);
+            sourceInputStream.close();
+            encryptor.close();
+
             return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
         return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));

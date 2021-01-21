@@ -1,10 +1,13 @@
 package com.swenkalski.blackchamber.services;
 
-import com.swenkalski.blackchamber.generator.RSAGen;
 import com.swenkalski.blackchamber.objects.mailobjects.Address;
 import com.swenkalski.blackchamber.objects.mailobjects.MailBox;
 import com.swenkalski.blackchamber.objects.mailobjects.MailFolder;
 import com.swenkalski.blackchamber.objects.mailobjects.UserInfo;
+import org.apache.commons.io.FileUtils;
+import org.pgpainless.PGPainless;
+import org.pgpainless.key.collection.PGPKeyRing;
+import org.pgpainless.key.generation.type.length.RsaLength;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;
@@ -130,7 +133,9 @@ public class UserService {
     }
 
     private void createKeys() throws Exception {
-        RSAGen.createKeyPair(getHash(keyPw), user.getUser());
+        PGPKeyRing keyRing = PGPainless.generateKeyRing().simpleRsaKeyRing(user.getUser(), RsaLength._8192, getHash(keyPw));
+        FileUtils.writeByteArrayToFile(new File(getPubKeyFile().getAbsolutePath()),keyRing.getPublicKeys().getPublicKey().getEncoded());
+        FileUtils.writeByteArrayToFile(new File(getPrivateKeyFile().getAbsolutePath()),keyRing.getSecretKeys().getSecretKey().getEncoded());
     }
 
     private boolean checkCredentials() throws Exception {
