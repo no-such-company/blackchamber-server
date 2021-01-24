@@ -5,13 +5,15 @@ package io.github.nosuchcompany.blackchamber.objects.meta;
 */
 
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@AllArgsConstructor
 public class InBoxMeta {
-    private String timecode;
+    private Long timecode;
     private Address sender;
     private String mailId;
 }

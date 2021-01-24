@@ -20,6 +20,7 @@ import java.util.List;
 
 import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.*;
 import static io.github.nosuchcompany.blackchamber.helper.ShaHelper.getHash;
+import static io.github.nosuchcompany.pgplug.utils.PGPUtils.generateKeyPair;
 import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
 
 public class UserService {
@@ -133,9 +134,10 @@ public class UserService {
     }
 
     private void createKeys() throws Exception {
-        PGPSecretKeyRing keyRing = PGPainless.generateKeyRing().simpleRsaKeyRing(user.getUser(), RsaLength._8192, getHash(keyPw));
-        FileUtils.writeByteArrayToFile(new File(getPubKeyFile().getAbsolutePath()), keyRing.getPublicKey().getEncoded());
-        FileUtils.writeByteArrayToFile(new File(getPrivateKeyFile().getAbsolutePath()), keyRing.getSecretKey().getEncoded());
+        OutputStream privateOut = new FileOutputStream(getPrivateKeyFile().getAbsolutePath());
+        OutputStream publicOut = new FileOutputStream(getPubKeyFile().getAbsolutePath());
+
+        generateKeyPair(privateOut, publicOut, getHash(keyPw).toCharArray());
     }
 
     private boolean checkCredentials() throws Exception {

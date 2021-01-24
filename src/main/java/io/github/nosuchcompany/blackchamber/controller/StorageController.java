@@ -6,6 +6,7 @@ import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.IncomingFiles;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.NewMail;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.OutgoingFiles;
+import io.github.nosuchcompany.blackchamber.objects.meta.InBoxMeta;
 import io.github.nosuchcompany.blackchamber.objects.meta.OutBoxMeta;
 import io.github.nosuchcompany.blackchamber.objects.response.Response;
 import io.github.nosuchcompany.blackchamber.services.ProbeService;
@@ -13,9 +14,7 @@ import io.github.nosuchcompany.blackchamber.helper.ShaHelper;
 import io.github.nosuchcompany.blackchamber.services.SendService;
 import io.github.nosuchcompany.blackchamber.services.UserService;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.bouncycastle.util.io.Streams;
-import org.pgpainless.PGPainless;
-import org.pgpainless.encryption_signing.EncryptionStream;
+import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +24,10 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static io.github.nosuchcompany.pgplug.utils.PGPUtils.encrypt;
+import static io.github.nosuchcompany.pgplug.utils.PGPUtils.readPublicKey;
 
 @RestController
 public class StorageController {
@@ -93,18 +93,12 @@ public class StorageController {
             this.purgeOutgoingFiles(mailId);
             Gson gson = new Gson();
             OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META));
-            EncryptionStream encryptor = PGPainless.encryptAndOrSign()
-                    .onOutputStream(outputStream)
-                    .toRecipients( PGPainless.readKeyRing().publicKeyRing("test"))
-                    .usingSecureAlgorithms()
-                    .signWith(PGPainless.readKeyRing().secretKeyRing("test").getSecretKey())
-                    .signBinaryDocument()
-                    .noArmor();
+            InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, PUB_ASC));
+            Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
+            publicKeys.add(readPublicKey(userPublicKeyStream));
 
-            InputStream sourceInputStream = new ByteArrayInputStream(gson.toJson(new OutBoxMeta(new Date().getTime(), recipients, mailId)).getBytes(StandardCharsets.UTF_8));
-            Streams.pipeAll(sourceInputStream, encryptor);
-            sourceInputStream.close();
-            encryptor.close();
+            encrypt(outputStream, gson.toJson(new OutBoxMeta(new Date().getTime(), recipients, mailId)).getBytes(StandardCharsets.UTF_8), publicKeys);
+
 
             return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
@@ -169,6 +163,13 @@ public class StorageController {
         try {
             if (probeService.sendProbeToSenderServer()) {
                 deployFiles(files, mailHeader);
+                Gson gson = new Gson();
+                OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailHeader.getMailId(), mailHeader.getRecipient(), META));
+                InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserOutFolderWithFilename(mailHeader.getMailId(), mailHeader.getRecipient(), PUB_ASC));
+                Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
+                publicKeys.add(readPublicKey(userPublicKeyStream));
+
+                encrypt(outputStream, gson.toJson(new InBoxMeta(new Date().getTime(), mailHeader.getRecipientAddress(), mailHeader.getMailId())).getBytes(StandardCharsets.UTF_8), publicKeys);
             }
         } catch (Exception e) {
             System.out.println(e);
