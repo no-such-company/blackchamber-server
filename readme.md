@@ -32,15 +32,6 @@ If it is found that something like this has happened, the domain of a compromise
 
 In general, the server only comes into contact with the encrypted material and does not have any clear names. It works backwards only with the hash values.
 
-## Current status
-
-* [x] build API
-* [ ] write tests
-* [ ] attach Postman-Workflow for integration test
-* [ ] publish sources on Github
-* [ ] create first running client for Android
-* [ ] setup first running service for public users
-
 ### Licence
 
 Please read license.txt before use.
@@ -77,7 +68,7 @@ POST/Multipart to `url.com:7331/in`
 
 Within the file there are an encrypted file with the Email text named `msg` and if needed a file called
 `fmsg` which contains HTML Text if wanted.
-All other Files are also encrypted.
+All other Files are also encrypted. See #profil section for further information.
 
 
 The recipient BlackChamber Server will now ask the sending Server if it was really send by the sender by sending the `mailid`.
@@ -294,3 +285,21 @@ Fetch a specific file regarding to the mail ID
 * `@RequestParam("user") String user` username with domain
 * `@RequestParam("recipients") List<String> recipients` list of recipient (actually we can just use one, becuase of the encryption.)
 
+## Message profil
+
+To send a proper message you need to create a `msg` file that is encrypted by the recipients and senders public key.
+Also all other files should be done with the same encryption. If you do not add your own public key, you can't 
+read your send mails from the outbox at least.
+These files will be encrypted with the public key of the sender.
+
+The JSON example of a `msg` file:
+```
+{
+    subject : "Here comes the subject of the Smail",
+    content : "Here comes plaintext of the content",
+    sender : "some.com//:foo.bar"
+}
+```
+
+There can be HTML content too, that is named `fmsg`. This is just a representation of the content.
+Subject and Sender will be fetched from the original `msg` file.
