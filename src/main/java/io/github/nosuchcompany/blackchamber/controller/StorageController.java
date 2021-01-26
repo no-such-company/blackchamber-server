@@ -13,6 +13,7 @@ import io.github.nosuchcompany.blackchamber.services.ProbeService;
 import io.github.nosuchcompany.blackchamber.helper.ShaHelper;
 import io.github.nosuchcompany.blackchamber.services.SendService;
 import io.github.nosuchcompany.blackchamber.services.UserService;
+import io.github.nosuchcompany.pgplug.sign.SignedFileProcessor;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.springframework.http.HttpStatus;
@@ -26,15 +27,12 @@ import java.nio.file.StandardCopyOption;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
+import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
 import static io.github.nosuchcompany.pgplug.utils.PGPUtils.encrypt;
 import static io.github.nosuchcompany.pgplug.utils.PGPUtils.readPublicKey;
 
 @RestController
 public class StorageController {
-
-    public static final String PUB_ASC = "pub.asc";
-    public static final String KEY_SKR = "key.skr";
-    public static final String META = "meta";
 
     @RequestMapping(value = "/in", method = RequestMethod.POST)
     public ResponseEntity<Response> handleNewMail(@RequestParam("attachments") List<MultipartFile> files
@@ -63,7 +61,7 @@ public class StorageController {
    So you must use the proper Endpoint.
     */
     @RequestMapping(value = "/inbox/mail/send", method = RequestMethod.POST)
-    public ResponseEntity<Response> sendMail(@RequestParam("attachments") List<MultipartFile> files
+    public ResponseEntity<Response> sendMail_multipleRecipients(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("user") String user
             , @RequestParam("pwhash") String pwHash
             , @RequestParam("recipients") List<String> recipients
@@ -93,12 +91,18 @@ public class StorageController {
             this.purgeOutgoingFiles(mailId);
             Gson gson = new Gson();
             OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META));
-            InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, PUB_ASC));
+            InputStream userPublicKeyStream = new FileInputStream(userService.getPubKeyFile());
             Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
             publicKeys.add(readPublicKey(userPublicKeyStream));
 
             encrypt(outputStream, gson.toJson(new OutBoxMeta(new Date().getTime(), recipients, mailId)).getBytes(StandardCharsets.UTF_8), publicKeys);
-
+            SignedFileProcessor.signFile(
+                    FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META),
+                    new FileInputStream(BC_STORAGE_KEYS_KEY_SKR),
+                    new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META)),
+                    "".toCharArray(),
+                    true
+            );
 
             return ResponseEntity.ok(new Response(HttpStatus.OK));
         }
@@ -163,13 +167,7 @@ public class StorageController {
         try {
             if (probeService.sendProbeToSenderServer()) {
                 deployFiles(files, mailHeader);
-                Gson gson = new Gson();
-                OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailHeader.getMailId(), mailHeader.getRecipient(), META));
-                InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserOutFolderWithFilename(mailHeader.getMailId(), mailHeader.getRecipient(), PUB_ASC));
-                Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
-                publicKeys.add(readPublicKey(userPublicKeyStream));
-
-                encrypt(outputStream, gson.toJson(new InBoxMeta(new Date().getTime(), mailHeader.getRecipientAddress(), mailHeader.getMailId())).getBytes(StandardCharsets.UTF_8), publicKeys);
+                deployMetaFiles(mailHeader);
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -202,6 +200,26 @@ public class StorageController {
             FileSystemHelper.copyFileUsingStream(file.getTempPath(), dest);
         }
         deployMetaFile();
+    }
+
+    private void deployMetaFiles(NewMail mailHeader) throws Exception {
+        Gson gson = new Gson();
+        String outputFilename = FileSystemHelper.getUserInFolderWithFilename(mailHeader, META);
+
+        OutputStream outputStream = new FileOutputStream(outputFilename);
+        InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserInFolderByName(mailHeader.getRecipientAddress(), PUB_ASC));
+
+        Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
+        publicKeys.add(readPublicKey(userPublicKeyStream));
+
+        encrypt(outputStream, gson.toJson(new InBoxMeta(new Date().getTime(), mailHeader.getRecipientAddress(), mailHeader.getMailId())).getBytes(StandardCharsets.UTF_8), publicKeys);
+        SignedFileProcessor.signFile(
+                outputFilename,
+                new FileInputStream(BC_STORAGE_KEYS_KEY_SKR),
+                new FileOutputStream(outputFilename),
+                "".toCharArray(),
+                true
+        );
     }
 
     private void purgeTempFiles(NewMail mailHeader) {

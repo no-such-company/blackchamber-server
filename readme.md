@@ -32,15 +32,6 @@ If it is found that something like this has happened, the domain of a compromise
 
 In general, the server only comes into contact with the encrypted material and does not have any clear names. It works backwards only with the hash values.
 
-## Current status
-
-* [x] build API
-* [ ] write tests
-* [ ] attach Postman-Workflow for integration test
-* [ ] publish sources on Github
-* [ ] create first running client for Android
-* [ ] setup first running service for public users
-
 ### Licence
 
 Please read license.txt before use.

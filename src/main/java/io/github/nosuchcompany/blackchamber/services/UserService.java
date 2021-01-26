@@ -4,10 +4,6 @@ import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.MailBox;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.MailFolder;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.UserInfo;
-import org.apache.commons.io.FileUtils;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.pgpainless.PGPainless;
-import org.pgpainless.key.generation.type.rsa.RsaLength;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;
@@ -22,14 +18,9 @@ import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.*;
 import static io.github.nosuchcompany.blackchamber.helper.ShaHelper.getHash;
 import static io.github.nosuchcompany.pgplug.utils.PGPUtils.generateKeyPair;
 import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
+import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
 
 public class UserService {
-    public static final String IN = "/in";
-    public static final String OUT = "/out";
-    public static final String SEPERATOR = "/";
-    public static final String PUB_ASC = "/pub.asc";
-    public static final String KEY_SKR = "/key.skr";
-    public static final String PW = ".pw";
     private String pw;
     private Address user;
     private String keyPw;
@@ -97,11 +88,11 @@ public class UserService {
     }
 
     public File getPubKeyFile() throws Exception {
-        return new File(getUserFolder(user.getUser()) + PUB_ASC);
+        return new File(getUserFolder(user.getUser()) + SEPERATOR +PUB_ASC);
     }
 
     public File getPrivateKeyFile() throws Exception {
-        return new File(getUserFolder(user.getUser()) + KEY_SKR);
+        return new File(getUserFolder(user.getUser()) + SEPERATOR + KEY_SKR);
     }
 
     public File getFile(String mailId, String fileId) throws Exception {

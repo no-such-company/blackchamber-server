@@ -26,11 +26,9 @@ import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.folde
 import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.getUserFolder;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexHalfedSHA256;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexSHA256;
+import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
 
 public class ProbeService {
-
-    public static final String IN_PROBE = ":1337/in/probe";
-    public static final String PARAMS = "?sender={sender}&recipient={recipient}&mailId={mailId}&attachments={attachments}";
 
     private final List<IncomingFiles> files;
     private final NewMail mailHeader;
@@ -54,7 +52,7 @@ public class ProbeService {
         for (IncomingFiles file : files) {
             hashes.add(file.getHash().substring(0, 31));
         }
-        params.put("attachments", String.join(",",hashes));
+        params.put("attachments", String.join(",", hashes));
 
         URI uri = UriComponentsBuilder.fromUriString(ProtocolHelper.getProtocol(mailHeader.getSenderAddress().getHost()) +
                 mailHeader.getSenderAddress().getHost() +
@@ -70,7 +68,7 @@ public class ProbeService {
 
         ResponseEntity<String> response = restTemplate.postForEntity(uri, requestEntity, String.class);
         if (response.getStatusCode() == HttpStatus.OK) {
-            JsonObject responseObject = new Gson().fromJson(response.getBody().toString(), JsonObject.class);
+            JsonObject responseObject = new Gson().fromJson(response.getBody(), JsonObject.class);
             JsonArray attachments = responseObject.get("attachments").getAsJsonArray();
 
             List<String> originalHashes = new ArrayList<>();
@@ -79,7 +77,7 @@ public class ProbeService {
                     if (!isHexSHA256(hash.getAsString())) {
                         return false;
                     }
-                    if (file.getHash().equals(hash.toString())) {
+                    if (file.getHash().equals(hash.getAsString())) {
                         originalHashes.add(hash.toString());
                     }
                 }
@@ -100,13 +98,15 @@ public class ProbeService {
         File dir = new File(getUserFolder(probe.getSender().split("//:")[1]) + "/out/" + probe.getMailId());
         List<String> originalHashes = new ArrayList<>();
         for (File file : dir.listFiles()) {
-            for (String hash : probe.getAttachments()) {
-                if (!isHexHalfedSHA256(hash)) {
-                    return null;
-                }
-                String fileHash = ShaHelper.getFileChecksum(file);
-                if (fileHash.contains(hash)) {
-                    originalHashes.add(fileHash);
+            if (!file.getName().equals("meta")) {
+                for (String hash : probe.getAttachments()) {
+                    if (!isHexHalfedSHA256(hash)) {
+                        return null;
+                    }
+                    String fileHash = ShaHelper.getFileChecksum(file);
+                    if (fileHash.contains(hash)) {
+                        originalHashes.add(fileHash);
+                    }
                 }
             }
         }

@@ -13,17 +13,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
+
 @Service
 public class FilesStorageServiceImpl implements FileStorageService {
 
-    private final Path root = Paths.get("bc_storage/temp");
+    private final Path root = Paths.get(BC_STORAGE_TEMP);
 
     @Override
     public void init() {
         try {
             Files.createDirectory(root);
         } catch (IOException e) {
-            throw new RuntimeException("Could not initialize folder for upload!");
+            throw new RuntimeException(COULD_NOT_INITIALIZE_FOLDER_FOR_UPLOAD);
         }
     }
 
@@ -32,7 +34,7 @@ public class FilesStorageServiceImpl implements FileStorageService {
         try {
             Files.copy(file.getInputStream(), this.root.resolve(file.getOriginalFilename()));
         } catch (Exception e) {
-            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
+            throw new RuntimeException(COULD_NOT_STORE_THE_FILE_ERROR + e.getMessage());
         }
     }
 
@@ -45,10 +47,10 @@ public class FilesStorageServiceImpl implements FileStorageService {
             if (resource.exists() || resource.isReadable()) {
                 return resource;
             } else {
-                throw new RuntimeException("Could not read the file!");
+                throw new RuntimeException(COULD_NOT_READ_THE_FILE);
             }
         } catch (MalformedURLException e) {
-            throw new RuntimeException("Error: " + e.getMessage());
+            throw new RuntimeException(ERROR + e.getMessage());
         }
     }
 
@@ -62,7 +64,7 @@ public class FilesStorageServiceImpl implements FileStorageService {
         try {
             return Files.walk(this.root, 1).filter(path -> !path.equals(this.root)).map(this.root::relativize);
         } catch (IOException e) {
-            throw new RuntimeException("Could not load the files!");
+            throw new RuntimeException(COULD_NOT_LOAD_THE_FILES);
         }
     }
 }
