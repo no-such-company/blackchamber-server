@@ -303,3 +303,41 @@ The JSON example of a `msg` file:
 
 There can be HTML content too, that is named `fmsg`. This is just a representation of the content.
 Subject and Sender will be fetched from the original `msg` file.
+
+
+## TLS
+
+To use SSL/TLS you have to add a proper .properties configuration on startup:
+
+`java -jar app.jar --spring.config.location=ssl.properties`
+
+Keep in mind, that the default configuration will not used anymore.
+So you have to add along the new SSL Configuration part, the original values to run the server.
+Please do not change the port. Otherwise, other SMail Server can't communicate with your instance.
+
+Here is an Example for this file:
+
+```java
+# SSL
+server.ssl.key-store=/home/user/keys/cert.p12
+server.ssl.key-store-password=123456
+
+# JKS or PKCS12
+server.ssl.keyStoreType=PKCS12
+
+# Spring Security
+# uncomment if the server only accept secured layer
+# security.require-ssl=true
+
+# These values can be modified
+spring.servlet.multipart.max-file-size=128KB
+spring.servlet.multipart.max-request-size=128KB
+
+# These part must remain untouched
+server.port=1337
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.location=${java.io.tmpdir}
+server.error.whitelabel.enabled=false
+bc.version=@project.version@
+
+```

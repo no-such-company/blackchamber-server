@@ -204,7 +204,9 @@ public class StorageController {
 
     private void deployMetaFiles(NewMail mailHeader) throws Exception {
         Gson gson = new Gson();
-        String outputFilename = FileSystemHelper.getUserInFolderWithFilename(mailHeader, META);
+        FileSystemHelper.createFolder(INF);
+        String outputFilename = FileSystemHelper.getUserInFolderWithFilename(mailHeader, META)+SEPERATOR+INF;
+
 
         OutputStream outputStream = new FileOutputStream(outputFilename);
         InputStream userPublicKeyStream = new FileInputStream(FileSystemHelper.getUserInFolderByName(mailHeader.getRecipientAddress(), PUB_ASC));
