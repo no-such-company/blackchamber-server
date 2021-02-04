@@ -1,6 +1,7 @@
 package io.github.nosuchcompany.blackchamber.controller;
 
 import com.google.gson.Gson;
+import io.github.nosuchcompany.blackchamber.enums.SystemFiles;
 import io.github.nosuchcompany.blackchamber.helper.FileSystemHelper;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.IncomingFiles;
@@ -90,16 +91,16 @@ public class StorageController {
             }
             this.purgeOutgoingFiles(mailId);
             Gson gson = new Gson();
-            OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META));
+            OutputStream outputStream = new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, SystemFiles.META.fileName));
             InputStream userPublicKeyStream = new FileInputStream(userService.getPubKeyFile());
             Set<PGPPublicKey> publicKeys = new HashSet<PGPPublicKey>();
             publicKeys.add(readPublicKey(userPublicKeyStream));
 
             encrypt(outputStream, gson.toJson(new OutBoxMeta(new Date().getTime(), recipients, mailId)).getBytes(StandardCharsets.UTF_8), publicKeys);
             SignedFileProcessor.signFile(
-                    FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META),
+                    FileSystemHelper.getUserOutFolderWithFilename(mailId, user, SystemFiles.META.fileName),
                     new FileInputStream(BC_STORAGE_KEYS_KEY_SKR),
-                    new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, META)),
+                    new FileOutputStream(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, SystemFiles.META.fileName)),
                     "".toCharArray(),
                     true
             );
@@ -180,8 +181,13 @@ public class StorageController {
         FileSystemHelper.createFolder(FileSystemHelper.getUserOutFolder(mailId, user));
 
         for (OutgoingFiles file : files) {
-
-            File dest = new File(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, file.getFile().getOriginalFilename()));
+            File dest;
+            if (file.getFile().getOriginalFilename().equals(SystemFiles.MSG.fileName) ||
+                    file.getFile().getOriginalFilename().equals(SystemFiles.FMSG.fileName)) {
+                dest = new File(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, file.getFile().getOriginalFilename()));
+            } else {
+                dest = new File(FileSystemHelper.getUserOutFolderWithFilename(mailId, user, file.getFile().getOriginalFilename()));
+            }
             FileSystemHelper.copyFileUsingStream(file.getTempPath(), dest);
         }
     }
@@ -193,10 +199,15 @@ public class StorageController {
 
     private void deployFiles(List<IncomingFiles> files, NewMail mailHeader) throws Exception {
         FileSystemHelper.createFolder(FileSystemHelper.getUserInFolderWithFilename(mailHeader));
-
+        FileSystemHelper.createFolder(FileSystemHelper.getUserInFolderForAttachmentsWithFilename(mailHeader));
+        File dest;
         for (IncomingFiles file : files) {
-
-            File dest = new File(FileSystemHelper.getUserInFolderWithFilename(mailHeader, file.getFile().getOriginalFilename()));
+            if (file.getFile().getOriginalFilename().equals(SystemFiles.MSG.fileName) ||
+                    file.getFile().getOriginalFilename().equals(SystemFiles.FMSG.fileName)) {
+                dest = new File(FileSystemHelper.getUserInFolderWithFilename(mailHeader, file.getFile().getOriginalFilename()));
+            } else {
+                dest = new File(FileSystemHelper.getUserInFolderForAttachmentWithFilename(mailHeader, file.getFile().getOriginalFilename()));
+            }
             FileSystemHelper.copyFileUsingStream(file.getTempPath(), dest);
         }
         deployMetaFile();
@@ -205,7 +216,7 @@ public class StorageController {
     private void deployMetaFiles(NewMail mailHeader) throws Exception {
         Gson gson = new Gson();
         FileSystemHelper.createFolder(INF);
-        String outputFilename = FileSystemHelper.getUserInFolderWithFilename(mailHeader, META)+SEPERATOR+INF;
+        String outputFilename = FileSystemHelper.getUserInFolderWithFilename(mailHeader, SystemFiles.META.fileName) + SEPERATOR + INF;
 
 
         OutputStream outputStream = new FileOutputStream(outputFilename);
