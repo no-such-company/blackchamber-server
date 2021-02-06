@@ -49,7 +49,7 @@ TL:DR;
 **This Software make sure that an Email isn't longer a postcard. Nothing more, nothing less!**
 
 ### Port
-The default port is 1337. It can be changed. SMail just try to send and awaits a clean API. You can run BlackChamber on a subdomain.
+The default port is 80 like http. It can be changed. SMail just try to send and awaits a clean API without expectations. You can run BlackChamber on a subdomain.
 The Address is now related to the subdomain.
 Example: `mail.url.com//:user.name`
 
@@ -340,7 +340,6 @@ spring.servlet.multipart.max-file-size=128KB
 spring.servlet.multipart.max-request-size=128KB
 
 #Server port
-#default is server.port=80
 server.port=443
 
 # These part must remain untouched
@@ -352,21 +351,21 @@ bc.version=@project.version@
 ```
 
 ## Setup on Hosts
-You can run BlackChamber under an subdomain or with IP.
+You can run BlackChamber under a subdomain or with IP.
 
 Example:
 You run BlackChamber on subdomain `mail.your-domain.com`.
-This might result in a long SMail Address.
+This might result in a longer SMail Address.
 At last your SMail Address would look like: `mail.your-domain.com//:user.name`
 
 Solution:
-Add a file named `smail.redir` into the accessible root of yor TLD and point to the Server that holds your BlackChamber Server.
+Add a file named `smail.redir` into the accessible root of your TLD and point to the Server that holds your BlackChamber Server.
 This file contains the location of the Server where BlackChamber is reached.
 ```
-mail.your-domain.com:4443
+mail.your-domain.com
 ```
 
 After doing so, the SMail Address will be your-domain.com//:user.name
-The port can be changed if you want, but it should be 80 or 443. Everything elese will be very experimental.
+The port can be changed withing the url (like `mail.your-domain.com:8080`) if you want. Everything else than Port 80 and 443 will be very experimental.
 Please note, that your Users have to work with the domain they are registered for. Mixing of both didn't work.
 
