@@ -7,7 +7,6 @@ package io.github.nosuchcompany.blackchamber.constants;
 public class Constants {
     public static final String PUB_ASC = "pub.asc";
     public static final String KEY_SKR = "key.skr";
-    public static final String META = "meta";
     public static final String BC_STORAGE = "bc_storage";
     public static final String BC_STORAGE_KEYS = "bc_storage/keys";
     public static final String BC_STORAGE_TEMP = "bc_storage/temp";
@@ -26,4 +25,9 @@ public class Constants {
     public static final String COULD_NOT_LOAD_THE_FILES = "Could not load the files!";
     public static final String IN_PROBE = ":1337/in/probe";
     public static final String PARAMS = "?sender={sender}&recipient={recipient}&mailId={mailId}&attachments={attachments}";
+    public static final String INF = "inf";
+
+    public static final String BC_TEMP_WITH_SEPERATOR = "bc_storage/temp/";
+    public static final String BC_STORAGE_WITH_SEPERATOR = "bc_storage/";
+    public static final String ATTACHMENT = "/attachment";
 }

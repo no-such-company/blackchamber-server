@@ -9,7 +9,6 @@ class ProtocolHelperTest {
     @ParameterizedTest
     @ValueSource(strings = {
             "127.0.0.1",
-            "198.162.0.1",
             "localhost"})
     void getProtocolShouldReturnHTTP(String host) {
         Assertions.assertEquals("http://", ProtocolHelper.getProtocol(host));

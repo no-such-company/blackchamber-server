@@ -6,45 +6,57 @@ import io.github.nosuchcompany.blackchamber.objects.mailobjects.NewMail;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+
+import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
 
 public class FileSystemHelper {
 
-    private static final String DOVECOTE_TEMP = "bc_storage/temp/";
-    private static final String DOVECOTE = "bc_storage/";
-    private static final String IN = "/in/";
-    private static final String OUT = "/out/";
-    private static final String SEPARATOR = "/";
-
     public static String getUserInFolderWithFilename(NewMail mailHeader, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId() + SEPARATOR + fileName;
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + SEPERATOR+ IN + SEPERATOR + mailHeader.getMailId() + SEPERATOR + fileName;
+    }
+
+    public static String getUserInFolderForAttachmentWithFilename(NewMail mailHeader, String fileName) throws Exception {
+        return BC_STORAGE_WITH_SEPERATOR +
+                ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) +
+                IN + SEPERATOR + mailHeader.getMailId() + SEPERATOR + ATTACHMENT + SEPERATOR + fileName;
     }
 
     public static String getUserInFolderByName(Address address, String filename) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(address.getUser()) + SEPARATOR + filename;
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(address.getUser()) + SEPERATOR + filename;
     }
 
     public static String getUserInFolderWithFilename(NewMail mailHeader) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + mailHeader.getMailId();
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + SEPERATOR + mailHeader.getMailId() + SEPERATOR;
+    }
+
+    public static String getUserInFolderForAttachments(NewMail mailHeader) throws Exception {
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(mailHeader.getRecipientAddress().getUser()) + IN + SEPERATOR +mailHeader.getMailId() + SEPERATOR + ATTACHMENT +SEPERATOR;
     }
 
     public static String getUserOutFolder(String mailId, String user) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(new Address(user).getUser()) + OUT + mailId;
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(new Address(user).getUser()) + OUT + SEPERATOR + mailId;
     }
 
     public static String getUserOutFolderWithFilename(String mailId, String user, String fileName) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(new Address(user).getUser()) + OUT + mailId + SEPARATOR + fileName;
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(new Address(user).getUser()) + OUT + SEPERATOR + mailId + SEPERATOR + fileName;
+    }
+
+    public static String getUserOutFolderForAttachmentsWithFilename(String mailId, String user, String fileName) throws Exception {
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(new Address(user).getUser()) + OUT + SEPERATOR + mailId + SEPERATOR + ATTACHMENT + SEPERATOR + fileName;
     }
 
     public static String getUserFolder(String username) throws Exception {
-        return DOVECOTE + ShaHelper.getHash(username);
+        return BC_STORAGE_WITH_SEPERATOR + ShaHelper.getHash(username);
     }
 
     public static String getTempFolderForIncomingMail(NewMail mailHeader) {
-        return DOVECOTE_TEMP + mailHeader.getMailId();
+        return BC_TEMP_WITH_SEPERATOR + mailHeader.getMailId();
     }
 
     public static String getTempFolderForOutboundMail(String mailId) {
-        return DOVECOTE_TEMP + mailId + "--OUT";
+        return BC_TEMP_WITH_SEPERATOR + mailId + "--OUT";
     }
 
     public static boolean createUserFolder(String username) throws Exception {
@@ -119,5 +131,20 @@ public class FileSystemHelper {
             is.close();
             os.close();
         }
+    }
+
+    public static List<File> fetchFilesFromDirRecursive(File dir) {
+        List<File> files = new ArrayList<>();
+        if (!dir.isDirectory()) {
+            return files;
+        }
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                files.addAll(fetchFilesFromDirRecursive(file));
+            } else {
+                files.add(file);
+            }
+        }
+        return files;
     }
 }

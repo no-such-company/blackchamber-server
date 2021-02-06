@@ -41,7 +41,7 @@ public class Sanitization {
         if (isIp4Address(pattern)) {
             return true;
         }
-        return Pattern.compile("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,6}$").matcher(pattern).matches();
+        return Pattern.compile("^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\\.)+[A-Za-z]{2,7}$").matcher(pattern).matches();
     }
 
     public static boolean isIp4Address(String pattern) {

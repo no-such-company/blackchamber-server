@@ -16,14 +16,15 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.folderExists;
-import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.getUserFolder;
+import static io.github.nosuchcompany.blackchamber.helper.AlternateHostHelper.getFinalDestinationHost;
+import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.*;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexHalfedSHA256;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexSHA256;
 import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
@@ -38,7 +39,7 @@ public class ProbeService {
         this.mailHeader = mailHeader;
     }
 
-    public boolean sendProbeToSenderServer() {
+    public boolean sendProbeToSenderServer() throws MalformedURLException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
 
@@ -55,7 +56,7 @@ public class ProbeService {
         params.put("attachments", String.join(",", hashes));
 
         URI uri = UriComponentsBuilder.fromUriString(ProtocolHelper.getProtocol(mailHeader.getSenderAddress().getHost()) +
-                mailHeader.getSenderAddress().getHost() +
+                getFinalDestinationHost(mailHeader.getSenderAddress().getHost()) +
                 IN_PROBE + PARAMS)
                 .buildAndExpand(params)
                 .toUri();
@@ -97,8 +98,9 @@ public class ProbeService {
         }
         File dir = new File(getUserFolder(probe.getSender().split("//:")[1]) + "/out/" + probe.getMailId());
         List<String> originalHashes = new ArrayList<>();
-        for (File file : dir.listFiles()) {
-            if (!file.getName().equals("meta")) {
+
+        for (File file : fetchFilesFromDirRecursive(dir)) {
+            if (!file.getName().equals("meta") && file.isFile()) {
                 for (String hash : probe.getAttachments()) {
                     if (!isHexHalfedSHA256(hash)) {
                         return null;

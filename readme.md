@@ -48,8 +48,14 @@ TL:DR;
 
 **This Software make sure that an Email isn't longer a postcard. Nothing more, nothing less!**
 
+### Port
+The default port is 1337. It can be changed. SMail just try to send and awaits a clean API. You can run BlackChamber on a subdomain.
+The Address is now related to the subdomain.
+Example: `mail.url.com//:user.name`
+
+
 ### How it Works
-BlackChamber accepts JSON with File transfer via HTTPS:7331.
+BlackChamber accepts JSON with File transfer via HTTPS:1337 (or different port).
 All Files are encrypted with PGP based on the public key of the recipient of the massage.
 The Recipient is mentions with these pattern:
 ```url.com//:someone```
@@ -64,7 +70,7 @@ The Message has to be introduced wit a POST Request which must include the follo
     mailid: "somestring_including_timecode"
 }
 ```
-POST/Multipart to `url.com:7331/in`
+POST/Multipart to `url.com:1337/in`
 
 Within the file there are an encrypted file with the Email text named `msg` and if needed a file called
 `fmsg` which contains HTML Text if wanted.
@@ -303,3 +309,64 @@ The JSON example of a `msg` file:
 
 There can be HTML content too, that is named `fmsg`. This is just a representation of the content.
 Subject and Sender will be fetched from the original `msg` file.
+
+
+## TLS
+
+To use SSL/TLS you have to add a proper .properties configuration on startup:
+
+`java -jar app.jar --spring.config.location=ssl.properties`
+
+Keep in mind, that the default configuration will not used anymore.
+So you have to add along the new SSL Configuration part, the original values to run the server.
+Please do not change the port. Otherwise, other SMail Server can't communicate with your instance.
+
+Here is an Example for this file:
+
+```java
+# SSL
+server.ssl.key-store=/home/user/keys/cert.p12
+server.ssl.key-store-password=123456
+
+# JKS or PKCS12
+server.ssl.keyStoreType=PKCS12
+
+# Spring Security
+# uncomment if the server only accept secured layer
+# security.require-ssl=true
+
+# These values can be modified
+spring.servlet.multipart.max-file-size=128KB
+spring.servlet.multipart.max-request-size=128KB
+
+#Server port
+#default is server.port=80
+server.port=443
+
+# These part must remain untouched
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.location=${java.io.tmpdir}
+server.error.whitelabel.enabled=false
+bc.version=@project.version@
+
+```
+
+## Setup on Hosts
+You can run BlackChamber under an subdomain or with IP.
+
+Example:
+You run BlackChamber on subdomain `mail.your-domain.com`.
+This might result in a long SMail Address.
+At last your SMail Address would look like: `mail.your-domain.com//:user.name`
+
+Solution:
+Add a file named `smail.redir` into the accessible root of yor TLD and point to the Server that holds your BlackChamber Server.
+This file contains the location of the Server where BlackChamber is reached.
+```
+mail.your-domain.com:4443
+```
+
+After doing so, the SMail Address will be your-domain.com//:user.name
+The port can be changed if you want, but it should be 80 or 443. Everything elese will be very experimental.
+Please note, that your Users have to work with the domain they are registered for. Mixing of both didn't work.
+
