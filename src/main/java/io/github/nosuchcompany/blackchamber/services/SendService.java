@@ -13,10 +13,13 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.github.nosuchcompany.blackchamber.helper.AlternateHostHelper.getFinalDestinationHost;
 
 public class SendService {
 
@@ -28,7 +31,7 @@ public class SendService {
         this.files = files;
     }
 
-    public ResponseEntity<Void> send(){
+    public ResponseEntity<Void> send() throws MalformedURLException {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
@@ -38,9 +41,9 @@ public class SendService {
             body.add("attachments", new FileSystemResource(file.getTempPath().toPath()));
         }
 
-        String url = ProtocolHelper.getProtocol(mail.getRecipientAddress().getHost()) + "{foreignMailBox}:1337/in?sender={sender}&recipient={recipient}&mailId={mailId}";
+        String url = ProtocolHelper.getProtocol(mail.getRecipientAddress().getHost()) + "{foreignMailBox}/in?sender={sender}&recipient={recipient}&mailId={mailId}";
         Map<String, String> params = new HashMap<String, String>();
-        params.put("foreignMailBox", mail.getRecipientAddress().getHost());
+        params.put("foreignMailBox", getFinalDestinationHost(mail.getRecipientAddress().getHost()));
         params.put("sender", mail.getSender());
         params.put("recipient", mail.getRecipient());
         params.put("mailId", mail.getMailId());

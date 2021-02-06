@@ -16,12 +16,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.github.nosuchcompany.blackchamber.helper.AlternateHostHelper.getFinalDestinationHost;
 import static io.github.nosuchcompany.blackchamber.helper.FileSystemHelper.*;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexHalfedSHA256;
 import static io.github.nosuchcompany.blackchamber.helper.Sanitization.isHexSHA256;
@@ -37,7 +39,7 @@ public class ProbeService {
         this.mailHeader = mailHeader;
     }
 
-    public boolean sendProbeToSenderServer() {
+    public boolean sendProbeToSenderServer() throws MalformedURLException {
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
 
@@ -54,7 +56,7 @@ public class ProbeService {
         params.put("attachments", String.join(",", hashes));
 
         URI uri = UriComponentsBuilder.fromUriString(ProtocolHelper.getProtocol(mailHeader.getSenderAddress().getHost()) +
-                mailHeader.getSenderAddress().getHost() +
+                getFinalDestinationHost(mailHeader.getSenderAddress().getHost()) +
                 IN_PROBE + PARAMS)
                 .buildAndExpand(params)
                 .toUri();

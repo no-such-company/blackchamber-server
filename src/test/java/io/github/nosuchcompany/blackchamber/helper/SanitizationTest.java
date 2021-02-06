@@ -70,4 +70,15 @@ class SanitizationTest {
     void isValidAddress(String sample) {
         assertTrue(Sanitization.isSMailAddress(sample));
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "domain.com",
+            "mail.domain.com",
+            "127.0.0.1",
+            "nosuch.company",
+            "mailit.nosuch.company"})
+    void isValidDomain(String sample) {
+        assertTrue(Sanitization.isDomain(sample));
+    }
 }
