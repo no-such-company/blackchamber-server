@@ -168,7 +168,7 @@ public class BlackChamberController {
                         .headers(headers)
                         .contentLength(userService.getFile(mailId, fileId).length())
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .body(userService.getPrivateKey());
+                        .body(userService.getFileBytes(mailId, fileId));
             }
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
