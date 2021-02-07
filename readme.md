@@ -112,9 +112,10 @@ dovecote/
             mail-ID(SHA-256)/
                 msg
                 fmsg
-                file1(SHA-256)
-                file2(SHA-256)
                 meta
+                attachment/
+                    file1
+                    file2
             mail-ID(SHA-256)/
                 msg
                 fmsg
@@ -245,6 +246,36 @@ Could be used to create a new keypair and overwrite the existsing.
 * `@RequestParam("hash") String pwhash)` passphrase for Mailboxfuctions (SHA-256)/HEX
 
 Retireve a JSON with all Folders and the ID hashes of the mails in it.
+Example:
+```
+
+{
+    "folder": [
+        {
+            "folderName": "out",
+            "mails": []
+        },
+        {
+            "folderName": "in",
+            "mails": [
+                {
+                    "mailId": "b8a8763d63bfa91ec7286f5084d7d679b7ccac39214063a8dd41a032ae59100b",
+                    "attachments": [
+                        "attachment1",
+                        "attachment2"
+                    ],
+                    "mailDescriptors": [
+                        "msg",
+                        "fmsg",
+                        "meta"
+                    ]
+                }
+            ]
+        }
+    ]
+}
+
+```
 
 ### fetch mail content
 `@RequestMapping(value = "/inbox/mail", method = RequestMethod.POST)`

@@ -1,9 +1,6 @@
 package io.github.nosuchcompany.blackchamber.services;
 
-import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
-import io.github.nosuchcompany.blackchamber.objects.mailobjects.MailBox;
-import io.github.nosuchcompany.blackchamber.objects.mailobjects.MailFolder;
-import io.github.nosuchcompany.blackchamber.objects.mailobjects.UserInfo;
+import io.github.nosuchcompany.blackchamber.objects.mailobjects.*;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;
@@ -71,7 +68,11 @@ public class UserService {
         MailBox mailBox = new MailBox();
         List<MailFolder> folderList = new ArrayList<>();
         for (String folder : getUserFolders()) {
-            folderList.add(new MailFolder(getMailIdsFromFolder(folder), folder));
+            List<Mails> mails = new ArrayList<>();
+            for (String mailId : getMailIdsFromFolder(folder)) {
+                mails.add(new Mails(mailId, getAttachmentFilesFromMailId(folder, mailId), getCommonFilesFromMailId(folder, mailId)));
+            }
+            folderList.add(new MailFolder(folder, mails));
         }
         mailBox.setFolder(folderList);
         return mailBox;
@@ -88,7 +89,7 @@ public class UserService {
     }
 
     public File getPubKeyFile() throws Exception {
-        return new File(getUserFolder(user.getUser()) + SEPERATOR +PUB_ASC);
+        return new File(getUserFolder(user.getUser()) + SEPERATOR + PUB_ASC);
     }
 
     public File getPrivateKeyFile() throws Exception {
@@ -105,7 +106,7 @@ public class UserService {
     }
 
     public ByteArrayResource getFileBytes(String mailId, String fileId) throws Exception {
-        Path path = Paths.get(getUserFolder(user.getUser())+ SEPERATOR + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
+        Path path = Paths.get(getUserFolder(user.getUser()) + SEPERATOR + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
         return new ByteArrayResource(Files.readAllBytes(path));
     }
 
@@ -184,6 +185,26 @@ public class UserService {
             @Override
             public boolean accept(File current, String name) {
                 return new File(current, name).isDirectory();
+            }
+        });
+    }
+
+    private String[] getCommonFilesFromMailId(String folder, String mailId) throws Exception {
+        File file = new File(getUserFolder(user.getUser()) + SEPERATOR + folder + SEPERATOR + mailId);
+        return file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isFile();
+            }
+        });
+    }
+
+    private String[] getAttachmentFilesFromMailId(String folder, String mailId) throws Exception {
+        File file = new File(getUserFolder(user.getUser()) + SEPERATOR + folder + SEPERATOR + mailId + SEPERATOR + ATTACHMENT);
+        return file.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File current, String name) {
+                return new File(current, name).isFile();
             }
         });
     }
