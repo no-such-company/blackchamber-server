@@ -112,9 +112,10 @@ dovecote/
             mail-ID(SHA-256)/
                 msg
                 fmsg
-                file1(SHA-256)
-                file2(SHA-256)
                 meta
+                attachment/
+                    file1
+                    file2
             mail-ID(SHA-256)/
                 msg
                 fmsg
