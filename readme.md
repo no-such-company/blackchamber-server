@@ -20,15 +20,16 @@ No one should read others mails!
 This program is the realization of a new idea of a secure replacement for email.
 Messenger can not replace email, because the functionality with reply, attach, forward, etc. have a great need in communication.
 The current email protocols are children of their time.
-SMail takes a new approach by communicating over the normal HTTPS protocol (port 1337) using POST/GET methods.
+SMail takes a new approach by communicating over the normal HTTPS protocol (port 443) using simple POST/GET methods.
 The advantage is that this form of communication can be quickly programmed for systems of any type.
 The communication takes place via a simple specification of the sender, the recipient and an ID. The ID is determined by the sender and is used by the receiving server only to verify that the mail was actually sent by the sender.
 A mail is accompanied by files in addition to the three specifications. These are ALWAYS encrypted by PGP. The sender can receive the required public key freely from the recipient's server.
-A file is necessary, which determines the content of the email. A time file can contain the content additionally as HTML. All other files are considered as attachments. When the receiver and the sender check back, SHA-256 hashes are used to ensure that the files have not been tampered with in transit.
+A `msg` file is necessary, which determines the content of the email. A second `fmsg` file can contain the content additionally as HTML. All other files are considered as attachments. When the receiver and the sender check back, SHA-256 hashes are used to ensure that the files have not been tampered within transit.
+In a later state of development the files must be signed by the sender.
 
-Additionally, a server can be blacklisted. As soon as a service offers SMail, it is legally obligated to state whether it uses the original procedure, and thus does not make any attempts to read or pass on the content to the user via a manipulated key or with an intermediate decryption.
+Additionally, a server can be blacklisted. As soon as a service or website offers SMail, it is legally obligated to state of security whether it uses the original procedure, and thus does not make any attempts to read or pass on the content to the user via a manipulated key or with an intermediate decryption.
 
-If it is found that something like this has happened, the domain of a compromised service (regardless of its influence or size) will be permanently excluded. This also applies in the event of a rebranding or renaming. There is a 0 strikes rule!
+If it is found that something like this has happened, the domain of a compromised service (regardless of its influence or size) will be permanently excluded in a later state of development. There will be a zero strikes rule!
 
 In general, the server only comes into contact with the encrypted material and does not have any clear names. It works backwards only with the hash values.
 
@@ -55,7 +56,7 @@ Example: `mail.url.com//:user.name`
 
 
 ### How it Works
-BlackChamber accepts JSON with File transfer via HTTPS:1337 (or different port).
+BlackChamber accepts JSON with File transfer via HTTPS:443 (or different port in experimental cases).
 All Files are encrypted with PGP based on the public key of the recipient of the massage.
 The Recipient is mentions with these pattern:
 ```url.com//:someone```
@@ -70,7 +71,7 @@ The Message has to be introduced wit a POST Request which must include the follo
     mailid: "somestring_including_timecode"
 }
 ```
-POST/Multipart to `url.com:1337/in`
+POST/Multipart to `url.com/in`
 
 Within the file there are an encrypted file with the Email text named `msg` and if needed a file called
 `fmsg` which contains HTML Text if wanted.
@@ -90,15 +91,9 @@ The Sender should now confirm with JSON Content:
     fmsg_sha512: "only appears if html formated message was sended",
     attachments: [
     "sone_sha512_stuff_for each other file", ....
-    ],
-    SMail_comp: true
+    ]
 }
 ```
-The recipient can check every file for the hash
-`SMail_comp` is very important. With the boolean the sender will agree, that the original BlackChamber Software is 
-used und completly untapperd and no violation to break the procedure was done.
-If it is TRUE and the Software is tampered or seized the owner can be sued. Also the Sender domain will be blacklisted and further 
-BlackChamber does not accept any Message send by this Domain.
 
 The files will be stored by the BlackChamber in the following pattern:
 
