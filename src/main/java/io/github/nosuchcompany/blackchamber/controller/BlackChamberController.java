@@ -86,8 +86,8 @@ public class BlackChamberController {
     validate that a user exists. This should not happen.
      */
     @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)
-    public Object fetchInboxPubKey(@RequestParam("user") String user) {
-        UserService userService = new UserService(user, null);
+    public Object fetchInboxPubKey(@RequestParam("user") String user) throws Exception {
+        UserService userService = new UserService(null, new Address(user));
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -100,6 +100,7 @@ public class BlackChamberController {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(userService.getPubKey());
         } catch (Exception e) {
+            System.out.println(e);
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
