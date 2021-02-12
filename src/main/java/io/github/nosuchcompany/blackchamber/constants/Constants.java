@@ -23,7 +23,7 @@ public class Constants {
     public static final String COULD_NOT_READ_THE_FILE = "Could not read the file!";
     public static final String ERROR = "Error: ";
     public static final String COULD_NOT_LOAD_THE_FILES = "Could not load the files!";
-    public static final String IN_PROBE = ":1337/in/probe";
+    public static final String IN_PROBE = "/in/probe";
     public static final String PARAMS = "?sender={sender}&recipient={recipient}&mailId={mailId}&attachments={attachments}";
     public static final String INF = "inf";
 
