@@ -97,7 +97,7 @@ public class UserService {
     }
 
     public File getFile(String mailId, String fileId, String folder) throws Exception {
-        return new File(getUserFolder(user.getUser()) + SEPERATOR+ folder + SEPERATOR + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
+        return new File(getUserFolder(user.getUser()) + SEPERATOR+ folder + SEPERATOR + mailId + SEPERATOR + fileId);
     }
 
     public ByteArrayResource getPrivateKey() throws Exception {

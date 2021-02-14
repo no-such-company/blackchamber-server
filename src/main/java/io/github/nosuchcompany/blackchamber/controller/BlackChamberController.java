@@ -100,7 +100,6 @@ public class BlackChamberController {
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .body(userService.getPubKey());
         } catch (Exception e) {
-            System.out.println(e);
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
