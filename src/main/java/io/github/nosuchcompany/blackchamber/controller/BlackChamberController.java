@@ -156,7 +156,7 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
-    public Object fetchMailItemByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId) throws Exception {
+    public Object fetchMailItemByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId, @RequestParam("folder") String folder) throws Exception {
         UserService userService = new UserService(pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
@@ -167,9 +167,9 @@ public class BlackChamberController {
 
                 return ResponseEntity.ok()
                         .headers(headers)
-                        .contentLength(userService.getFile(mailId, fileId).length())
+                        .contentLength(userService.getFile(mailId, fileId, folder).length())
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .body(userService.getFileBytes(mailId, fileId));
+                        .body(userService.getFileBytes(mailId, fileId, folder));
             }
         } catch (Exception e) {
             return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);

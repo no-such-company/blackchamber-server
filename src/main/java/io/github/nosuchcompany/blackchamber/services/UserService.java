@@ -96,8 +96,8 @@ public class UserService {
         return new File(getUserFolder(user.getUser()) + SEPERATOR + KEY_SKR);
     }
 
-    public File getFile(String mailId, String fileId) throws Exception {
-        return new File(getUserFolder(user.getUser()) + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
+    public File getFile(String mailId, String fileId, String folder) throws Exception {
+        return new File(getUserFolder(user.getUser()) + SEPERATOR+ folder + SEPERATOR + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
     }
 
     public ByteArrayResource getPrivateKey() throws Exception {
@@ -105,8 +105,8 @@ public class UserService {
         return new ByteArrayResource(Files.readAllBytes(path));
     }
 
-    public ByteArrayResource getFileBytes(String mailId, String fileId) throws Exception {
-        Path path = Paths.get(getUserFolder(user.getUser()) + SEPERATOR + mailId + SEPERATOR + fileId);
+    public ByteArrayResource getFileBytes(String mailId, String fileId, String folder) throws Exception {
+        Path path = Paths.get(getUserFolder(user.getUser()) + SEPERATOR+ folder + SEPERATOR + mailId + SEPERATOR + fileId);
         return new ByteArrayResource(Files.readAllBytes(path));
     }
 
