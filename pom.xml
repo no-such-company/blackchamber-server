@@ -11,7 +11,7 @@
     </parent>
     <groupId>io.github.no-such-company</groupId>
     <artifactId>blackchamber</artifactId>
-    <version>21.2.8-SNAPSHOT</version>
+    <version>21.2.9-SNAPSHOT</version>
 
     <properties>
         <java.version>15</java.version>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>io.github.no-such-company</groupId>
             <artifactId>pgplug</artifactId>
-            <version>21.2</version>
+            <version>21.4</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
