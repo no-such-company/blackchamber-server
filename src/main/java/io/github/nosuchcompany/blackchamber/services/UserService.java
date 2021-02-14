@@ -106,7 +106,7 @@ public class UserService {
     }
 
     public ByteArrayResource getFileBytes(String mailId, String fileId) throws Exception {
-        Path path = Paths.get(getUserFolder(user.getUser()) + SEPERATOR + getFolderFromMailId(mailId) + SEPERATOR + mailId + SEPERATOR + fileId);
+        Path path = Paths.get(getUserFolder(user.getUser()) + SEPERATOR + mailId + SEPERATOR + fileId);
         return new ByteArrayResource(Files.readAllBytes(path));
     }
 
