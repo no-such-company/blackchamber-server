@@ -288,6 +288,7 @@ Return all filenames inside the mailID
 * `@RequestParam("user") String user` username with domain
 * `@RequestParam("hash") String pwhash` passphrase for Mailboxfuctions (SHA-256)/HEX
 * `@RequestParam("mailId") String mailId` ID of the Mail
+* `@RequestParam("folder") String folder` Name of the Folder
 * `@RequestParam("fileId") String fileId` ID of the File
   
 Fetch a specific file regarding to the mail ID
