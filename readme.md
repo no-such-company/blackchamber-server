@@ -50,9 +50,10 @@ TL:DR;
 **This Software make sure that an Email isn't longer a postcard. Nothing more, nothing less!**
 
 ### Port
-The default port is 80 like http. It can be changed. SMail just try to send and awaits a clean API without expectations. You can run BlackChamber on a subdomain.
+The default port is 443. It can be changed. SMail just try to send and awaits a clean API without expectations. You can run BlackChamber on a subdomain.
 The Address is now related to the subdomain.
 Example: `mail.url.com//:user.name`
+[Read here](https://github.com/no-such-company/blackchamber-server/wiki/Setup-Host-forward) if you want to use your TLD and run Blackchamber on Subdomain
 
 
 ### How it Works
@@ -62,38 +63,31 @@ The Recipient is mentions with these pattern:
 ```url.com//:someone```
 
 The url can be any common url. The name (someone it this example) should only `accept a-z0-9.-_`
-
-The Message has to be introduced wit a POST Request which must include the following pattern:
-```
-{
-    sender: "somewehere.org/someone-else"
-    recipient: "url.com/someone"
-    mailid: "somestring_including_timecode"
-}
-```
-POST/Multipart to `url.com/in`
-
-Within the file there are an encrypted file with the Email text named `msg` and if needed a file called
+Within the POST to send Emails, there are an encrypted file with the Email text named `msg` and if needed a file called
 `fmsg` which contains HTML Text if wanted.
 All other Files are also encrypted. See #profil section for further information.
 
 
+### Content Probing
 The recipient BlackChamber Server will now ask the sending Server if it was really send by the sender by sending the `mailid`.
-GET `somewhere.org/proof/somestring_including_timecode`
+GET `somewhere.org/probe/mailId`
+The security concept provides that after receiving a mail, the sending server is confronted with the hash value of the sent files. However, only half of the hash is transmitted in each case.
+The sending server must confirm with the full hash value that it is the legitimate sender.
 
 The Sender should now confirm with JSON Content:
 ```
 {
-    sender: "somewehere.org/someone-else",
-    recipient: "url.com/someone",
+    sender: "somewehere.org//:someone-else",
+    recipient: "url.com//:someone",
     mailid: "somestring_including_timecode",
-    msg_sha512: "sha512stuffhere",
-    fmsg_sha512: "only appears if html formated message was sended",
     attachments: [
     "sone_sha512_stuff_for each other file", ....
     ]
 }
+
 ```
+Furthermore, the client software protocol requires that the files are signed by the sender.
+Later clients are only allowed as official clients if a signing takes place in addition to the PGP encryption.
 
 The files will be stored by the BlackChamber in the following pattern:
 
