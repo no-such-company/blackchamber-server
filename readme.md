@@ -364,12 +364,17 @@ spring.servlet.multipart.max-request-size=128KB
 #Server port
 server.port=443
 
+#User max Diskspace
+user.max.dsp=50
+
+#Registration-key - read Documentation
+user.reg.key=0000
+
 # These part must remain untouched
 spring.servlet.multipart.enabled=true
 spring.servlet.multipart.location=${java.io.tmpdir}
 server.error.whitelabel.enabled=false
 bc.version=@project.version@
-
 ```
 
 ## Setup on Hosts
@@ -391,3 +396,28 @@ After doing so, the SMail Address will be your-domain.com//:user.name
 The port can be changed withing the url (like `mail.your-domain.com:8080`) if you want. Everything else than Port 80 and 443 will be very experimental.
 Please note, that your Users have to work with the domain they are registered for. Mixing of both didn't work.
 
+
+## Error Codes
+
+###LVL 1 Error Codes "Userspace"
+
+Level 1 is dedicated to the User interaction on BlackChamber.
+This level could be described with "You f**ked up"
+* E11:Userspace is full
+* E12:User not found
+* E13:Credentials mismatch
+
+###LVL 2 Error Codes "Send/Receive Mails Issues"
+
+Level 2 is dedicated to the Senders interaction on BlackChamber.
+This level could be described with "They f**ked up"
+* E21:Probing of files failed
+* E22:The Sender is Blacklisted
+
+###LVL 3 Error Codes "System Errors"
+
+Level 3 is dedicated to BlackChamber and the Operating System.
+This level could be described with "The Server/System f**ked up"
+* E31:Metadata creation failed
+* E32:Moving of files failed
+* E33:Creation of keys failed

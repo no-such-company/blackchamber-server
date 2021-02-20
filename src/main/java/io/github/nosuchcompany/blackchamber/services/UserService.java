@@ -1,6 +1,7 @@
 package io.github.nosuchcompany.blackchamber.services;
 
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.*;
+import org.springframework.core.env.Environment;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.io.*;
@@ -18,17 +19,22 @@ import static org.apache.tomcat.util.http.fileupload.FileUtils.deleteDirectory;
 import static io.github.nosuchcompany.blackchamber.constants.Constants.*;
 
 public class UserService {
+
+    private Environment env;
+
     private String pw;
     private Address user;
     private String keyPw;
 
-    public UserService(String pw, String keyPw, Address user) {
+    public UserService(Environment env, String pw, String keyPw, Address user) {
+        this.env = env;
         this.pw = pw;
         this.user = user;
         this.keyPw = keyPw;
     }
 
-    public UserService(String pw, Address user) {
+    public UserService(Environment env, String pw, Address user) {
+        this.env = env;
         this.pw = pw;
         this.user = user;
     }
@@ -117,6 +123,11 @@ public class UserService {
 
     public void deleteMail(String mailId) throws Exception {
         deleteDirectory(new File(getUserFolder(user.getUser()) + getFolderFromMailId(mailId) + SEPERATOR + mailId));
+    }
+
+    public boolean isDspExceed() throws Exception {
+        long folderSize = (folderSize(new File(getUserFolder(user.getUser())))/ 1024) / 1024;
+        return Long.valueOf(env.getProperty("user.max.dsp")) <= folderSize;
     }
 
     private void setupUserFolderAndMetaFiles() throws Exception {

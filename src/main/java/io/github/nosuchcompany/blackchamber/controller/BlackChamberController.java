@@ -1,12 +1,15 @@
 package io.github.nosuchcompany.blackchamber.controller;
 
 import com.google.gson.Gson;
+import io.github.nosuchcompany.blackchamber.enums.ErrorCodes;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.Probe;
 import io.github.nosuchcompany.blackchamber.objects.response.InformationResponse;
 import io.github.nosuchcompany.blackchamber.objects.response.Response;
 import io.github.nosuchcompany.blackchamber.services.ProbeService;
 import io.github.nosuchcompany.blackchamber.services.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
 import org.springframework.http.HttpStatus;
@@ -21,6 +24,9 @@ public class BlackChamberController {
 
     @Value("${bc.version}")
     private String version;
+
+    @Autowired
+    private Environment env;
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public ResponseEntity<InformationResponse> welcome() {
@@ -40,21 +46,30 @@ public class BlackChamberController {
     }
 
     @RequestMapping(value = "/inbox/create", method = RequestMethod.POST)
-    public ResponseEntity<Response> createUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("keyHash") String keyHash) throws Exception {
-        UserService userService = new UserService(pwHash, keyHash, new Address(user));
+    public ResponseEntity<Response> createUser(
+            @RequestParam("user") String user,
+            @RequestParam("hash") String pwHash,
+            @RequestParam("keyHash") String keyHash,
+            @RequestParam("reg") String registrationKey) throws Exception {
+
+        if (!registrationKey.equals(env.getProperty("user.reg.key"))) {
+            return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST, ErrorCodes.USER_CREATION_CREDENTIAL_MISMATCH));
+        }
+
+        UserService userService = new UserService(env, pwHash, keyHash, new Address(user));
         try {
             if (!userService.createUser()) {
-                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
+                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST, ErrorCodes.USER_CREATION_EXEPTION));
             }
         } catch (Exception e) {
-            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.SERVER_ERROR));
         }
-        return ResponseEntity.ok(new Response(HttpStatus.OK));
+        return ResponseEntity.ok(new Response(HttpStatus.OK, ErrorCodes.FINE));
     }
 
     @RequestMapping(value = "/inbox/delete", method = RequestMethod.POST)
     public ResponseEntity deleteUser(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 userService.shredUser();
@@ -70,7 +85,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/info", method = RequestMethod.POST)
     public Object fetchInboxInformation(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 return userService.getUserInformation();
@@ -87,7 +102,7 @@ public class BlackChamberController {
      */
     @RequestMapping(value = "/in/pubkey", method = RequestMethod.POST)
     public Object fetchInboxPubKey(@RequestParam("user") String user) throws Exception {
-        UserService userService = new UserService(null, new Address(user));
+        UserService userService = new UserService(env, null, new Address(user));
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
@@ -106,7 +121,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/privkey", method = RequestMethod.POST)
     public Object fetchInboxPubKey(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 HttpHeaders headers = new HttpHeaders();
@@ -130,33 +145,33 @@ public class BlackChamberController {
     public Object renewInboxKeys(@RequestParam("user") String user,
                                  @RequestParam("hash") String pwHash,
                                  @RequestParam("keyHash") String keyHash) throws Exception {
-        UserService userService = new UserService(pwHash, keyHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, keyHash, new Address(user));
         try {
             if (!userService.renewKey()) {
-                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
+                return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST, ErrorCodes.KEY_CREATION_EXCEPTION));
             }
         } catch (Exception e) {
-            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.SERVER_ERROR));
         }
-        return ResponseEntity.ok(new Response(HttpStatus.OK));
+        return ResponseEntity.ok(new Response(HttpStatus.OK, ErrorCodes.FINE));
     }
 
     @RequestMapping(value = "/inbox/mails", method = RequestMethod.POST)
     public ResponseEntity<Object> fetchInboxList(@RequestParam("user") String user, @RequestParam("hash") String pwHash) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 return ResponseEntity.ok(userService.getMailFolders());
             }
         } catch (Exception e) {
-            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.SERVER_ERROR));
         }
-        return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST));
+        return ResponseEntity.ok(new Response(HttpStatus.BAD_REQUEST, ErrorCodes.SERVER_ERROR));
     }
 
     @RequestMapping(value = "/inbox/mail/file", method = RequestMethod.POST)
     public Object fetchMailItemByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("fileId") String fileId, @RequestParam("folder") String folder) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 HttpHeaders headers = new HttpHeaders();
@@ -178,7 +193,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mail/remove", method = RequestMethod.POST)
     public Object removeMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser()) {
                 userService.deleteMail(mailId);
@@ -194,7 +209,7 @@ public class BlackChamberController {
 
     @RequestMapping(value = "/inbox/mail/move", method = RequestMethod.POST)
     public Object moveMailByID(@RequestParam("user") String user, @RequestParam("hash") String pwHash, @RequestParam("mailId") String mailId, @RequestParam("dest") String dest) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         try {
             if (userService.validateUser() && isValidFolderNamePattern(dest)) {
                 userService.move(mailId, dest);
