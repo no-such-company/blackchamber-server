@@ -1,6 +1,7 @@
 package io.github.nosuchcompany.blackchamber.controller;
 
 import com.google.gson.Gson;
+import io.github.nosuchcompany.blackchamber.enums.ErrorCodes;
 import io.github.nosuchcompany.blackchamber.enums.SystemFiles;
 import io.github.nosuchcompany.blackchamber.helper.FileSystemHelper;
 import io.github.nosuchcompany.blackchamber.objects.mailobjects.Address;
@@ -17,6 +18,8 @@ import io.github.nosuchcompany.blackchamber.services.UserService;
 import io.github.nosuchcompany.pgplug.sign.SignedFileProcessor;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.bouncycastle.openpgp.PGPPublicKey;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +38,9 @@ import static io.github.nosuchcompany.pgplug.utils.PGPUtils.readPublicKey;
 @RestController
 public class StorageController {
 
+    @Autowired
+    private Environment env;
+
     @RequestMapping(value = "/in", method = RequestMethod.POST)
     public ResponseEntity<Response> handleNewMail(@RequestParam("attachments") List<MultipartFile> files
             , @RequestParam("sender") String sender
@@ -42,6 +48,10 @@ public class StorageController {
             , @RequestParam("mailId") String mailId) {
         try {
             NewMail mailHeader = new NewMail(recipient, sender, mailId, new Date().getTime());
+            UserService user = new UserService(env, null, mailHeader.getRecipientAddress());
+            if(user.isDspExceed()){
+                return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN, ErrorCodes.MAX_QUOTA_ERR));
+            }
             List<IncomingFiles> attachments = new ArrayList<>();
 
 
@@ -51,9 +61,9 @@ public class StorageController {
                 );
             }
             this.storeFileTemp(attachments, mailHeader);
-            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR));
+            return ResponseEntity.ok(new Response(HttpStatus.INTERNAL_SERVER_ERROR, ErrorCodes.SERVER_ERROR));
         } catch (Exception e) {
-            return ResponseEntity.ok(new Response(HttpStatus.OK));
+            return ResponseEntity.ok(new Response(HttpStatus.OK, ErrorCodes.FINE));
         }
     }
 
@@ -67,8 +77,8 @@ public class StorageController {
             , @RequestParam("pwhash") String pwHash
             , @RequestParam("recipients") List<String> recipients
     ) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
-        if (userService.validateUser()) {
+        UserService userService = new UserService(env, pwHash, new Address(user));
+        if (userService.validateUser() && !userService.isDspExceed()) {
             String mailId = ShaHelper.getHash(user + recipients.toString() + new Date().getTime());
             List<OutgoingFiles> attachments = new ArrayList<>();
 
@@ -105,9 +115,9 @@ public class StorageController {
                     true
             );
 
-            return ResponseEntity.ok(new Response(HttpStatus.OK));
+            return ResponseEntity.ok(new Response(HttpStatus.OK, ErrorCodes.FINE));
         }
-        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));
+        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN, ErrorCodes.BAD_CREDENTIALS));
     }
 
     @RequestMapping(value = "/inbox/setkeys", method = RequestMethod.POST)
@@ -115,7 +125,7 @@ public class StorageController {
                                                      @RequestParam("hash") String pwHash,
                                                      @RequestParam("pub") MultipartFile pubKey,
                                                      @RequestParam("priv") MultipartFile privKey) throws Exception {
-        UserService userService = new UserService(pwHash, new Address(user));
+        UserService userService = new UserService(env, pwHash, new Address(user));
         if (userService.validateUser()) {
             Address address = new Address(user);
             if (privKey.getOriginalFilename().equals(KEY_SKR) && pubKey.getOriginalFilename().equals(PUB_ASC)) {
@@ -125,10 +135,10 @@ public class StorageController {
                 dest = new File(FileSystemHelper.getUserInFolderByName(address, privKey.getOriginalFilename()));
                 FileSystemHelper.copyFileUsingStream(privKey.getResource().getFile(), dest);
 
-                return ResponseEntity.ok(new Response(HttpStatus.OK));
+                return ResponseEntity.ok(new Response(HttpStatus.OK, ErrorCodes.FINE));
             }
         }
-        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN));
+        return ResponseEntity.ok(new Response(HttpStatus.FORBIDDEN, ErrorCodes.BAD_CREDENTIALS));
     }
 
     private void storeTempFilesForOutbound(List<OutgoingFiles> files, String mailId) throws IOException, NoSuchAlgorithmException {
