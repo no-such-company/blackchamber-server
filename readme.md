@@ -54,9 +54,6 @@ The default port is 443. It can be changed. SMail just try to send and awaits a 
 The Address is now related to the subdomain.
 Example: `mail.url.com//:user.name`
 
-[Read here](https://github.com/no-such-company/blackchamber-server/wiki/Setup-Host-forward) if you want to use your TLD and run Blackchamber on Subdomain
-
-
 ### How it Works
 BlackChamber accepts JSON with File transfer via HTTPS:443 (or different port in experimental cases).
 All Files are encrypted with PGP based on the public key of the recipient of the massage.
